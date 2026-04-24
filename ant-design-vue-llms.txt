@@ -1,0 +1,415 @@
+# Ant Design Vue
+
+> An enterprise-class UI component library for Vue 3, implementing the Ant Design specification.
+> Package: `ant-design-vue` | Latest stable: 4.2.6 | License: MIT
+> Homepage: https://antdv.com | GitHub: https://github.com/vueComponent/ant-design-vue
+
+## Overview
+
+Ant Design Vue (antdv) is the official Vue implementation of Alibaba's Ant Design system.
+It provides ~80 high-quality components for building enterprise desktop web applications.
+Supports Vue 3 (v3+/v4+), Server-Side Rendering, and Electron.
+Icons are in a separate package: `@ant-design/icons-vue`.
+
+## Installation
+
+```bash
+npm install ant-design-vue
+# or
+yarn add ant-design-vue
+```
+
+### Full import (main.ts)
+
+```ts
+import { createApp } from 'vue'
+import Antd from 'ant-design-vue'
+import 'ant-design-vue/dist/reset.css'
+import App from './App.vue'
+
+createApp(App).use(Antd).mount('#app')
+```
+
+### On-demand import (recommended, via unplugin-vue-components)
+
+```ts
+// vite.config.ts
+import Components from 'unplugin-vue-components/vite'
+import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
+
+export default defineConfig({
+  plugins: [
+    Components({
+      resolvers: [AntDesignVueResolver({ importStyle: false })]
+    })
+  ]
+})
+```
+
+### Manual tree-shaking
+
+```ts
+import { Button, DatePicker } from 'ant-design-vue'
+app.use(Button).use(DatePicker)
+```
+
+## Component tag prefix
+
+All components use the `a-` prefix in templates.
+e.g. `<a-button>`, `<a-table>`, `<a-form-item>`
+
+---
+
+## Components
+
+### General
+
+- **Button** (`a-button`) — https://antdv.com/components/button
+  Types: primary, default, dashed, text, link. Props: `type`, `size`, `loading`, `disabled`, `shape`, `icon`, `block`, `danger`, `ghost`.
+
+- **Icon** (`@ant-design/icons-vue`) — https://antdv.com/components/icon
+  Import individual icons: `import { HomeOutlined } from '@ant-design/icons-vue'`
+  Props: `spin`, `rotate`, `twoToneColor`, `theme`.
+
+- **Typography** (`a-typography`, `a-typography-text`, `a-typography-title`, `a-typography-paragraph`, `a-typography-link`) — https://antdv.com/components/typography
+  Props: `type` (secondary/success/warning/danger), `disabled`, `mark`, `code`, `keyboard`, `underline`, `delete`, `strong`, `italic`, `copyable`, `editable`, `ellipsis`.
+
+---
+
+### Layout
+
+- **Divider** (`a-divider`) — https://antdv.com/components/divider
+  Props: `type` (horizontal/vertical), `orientation`, `dashed`, `plain`.
+
+- **Flex** (`a-flex`) — https://antdv.com/components/flex
+  Props: `vertical`, `justify`, `align`, `gap`, `wrap`.
+
+- **Grid** (`a-row`, `a-col`) — https://antdv.com/components/grid
+  `a-row` props: `gutter`, `justify`, `align`, `wrap`.
+  `a-col` props: `span`, `offset`, `push`, `pull`, `xs`, `sm`, `md`, `lg`, `xl`, `xxl`.
+
+- **Layout** (`a-layout`, `a-layout-header`, `a-layout-sider`, `a-layout-content`, `a-layout-footer`) — https://antdv.com/components/layout
+  `a-layout-sider` props: `collapsible`, `collapsed`, `width`, `collapsedWidth`, `breakpoint`, `theme`.
+
+- **Space** (`a-space`, `a-space-compact`) — https://antdv.com/components/space
+  Props: `size` (small/middle/large/number), `direction`, `align`, `wrap`, `split`.
+
+---
+
+### Navigation
+
+- **Anchor** (`a-anchor`, `a-anchor-link`) — https://antdv.com/components/anchor
+  Props: `affix`, `bounds`, `targetOffset`, `getCurrentAnchor`, `direction`.
+
+- **Breadcrumb** (`a-breadcrumb`, `a-breadcrumb-item`) — https://antdv.com/components/breadcrumb
+  Props: `routes`, `separator`, `itemRender`.
+
+- **Dropdown** (`a-dropdown`, `a-dropdown-button`) — https://antdv.com/components/dropdown
+  Props: `menu`, `trigger`, `placement`, `disabled`, `open`, `arrow`.
+
+- **Menu** (`a-menu`, `a-menu-item`, `a-sub-menu`, `a-menu-item-group`, `a-menu-divider`) — https://antdv.com/components/menu
+  Props: `mode` (horizontal/vertical/inline), `theme`, `selectedKeys`, `openKeys`, `items`, `inlineCollapsed`.
+
+- **Pagination** (`a-pagination`) — https://antdv.com/components/pagination
+  Props: `current`, `total`, `pageSize`, `showSizeChanger`, `showQuickJumper`, `simple`, `disabled`, `responsive`.
+
+- **Steps** (`a-steps`, `a-step`) — https://antdv.com/components/steps
+  Props: `current`, `status`, `direction`, `size`, `progressDot`, `type`, `items`.
+
+---
+
+### Data Entry
+
+- **AutoComplete** (`a-auto-complete`) — https://antdv.com/components/auto-complete
+  Props: `options`, `filterOption`, `value`, `placeholder`, `open`, `allowClear`.
+
+- **Cascader** (`a-cascader`) — https://antdv.com/components/cascader
+  Props: `options`, `value`, `fieldNames`, `multiple`, `showSearch`, `changeOnSelect`, `loadData`, `expandTrigger`.
+
+- **Checkbox** (`a-checkbox`, `a-checkbox-group`) — https://antdv.com/components/checkbox
+  Props: `checked`, `indeterminate`, `disabled`, `value`. Group props: `options`, `value`.
+
+- **ColorPicker** (`a-color-picker`) — https://antdv.com/components/color-picker
+  Props: `value`, `defaultValue`, `format`, `open`, `disabled`, `allowClear`, `presets`, `showText`.
+
+- **DatePicker** / **RangePicker** (`a-date-picker`, `a-range-picker`) — https://antdv.com/components/date-picker
+  Props: `value`, `format`, `picker` (date/week/month/quarter/year), `showTime`, `disabledDate`, `locale`.
+  Uses dayjs internally.
+
+- **Form** (`a-form`, `a-form-item`) — https://antdv.com/components/form
+  `a-form` props: `model`, `rules`, `layout` (horizontal/vertical/inline), `labelCol`, `wrapperCol`, `validateTrigger`, `scrollToFirstError`.
+  `a-form-item` props: `name`, `label`, `rules`, `validateStatus`, `hasFeedback`, `extra`, `tooltip`.
+  Use `useForm()` composable or template ref `.validate()` / `.resetFields()`.
+
+- **Input** (`a-input`, `a-input-password`, `a-input-search`, `a-textarea`, `a-input-number`) — https://antdv.com/components/input
+  Props: `value`, `size`, `disabled`, `allowClear`, `prefix`, `suffix`, `addonBefore`, `addonAfter`, `showCount`, `maxlength`.
+
+- **Mentions** (`a-mentions`) — https://antdv.com/components/mentions
+  Props: `value`, `options`, `prefix`, `split`, `filterOption`.
+
+- **Radio** (`a-radio`, `a-radio-group`, `a-radio-button`) — https://antdv.com/components/radio
+  Props: `value`, `disabled`, `checked`. Group props: `options`, `optionType` (default/button), `buttonStyle`.
+
+- **Rate** (`a-rate`) — https://antdv.com/components/rate
+  Props: `value`, `count`, `allowHalf`, `allowClear`, `disabled`, `character`.
+
+- **Select** (`a-select`, `a-select-option`, `a-select-opt-group`) — https://antdv.com/components/select
+  Props: `value`, `options`, `mode` (multiple/tags/combobox), `showSearch`, `filterOption`, `allowClear`, `loading`, `fieldNames`, `virtual`, `maxTagCount`.
+
+- **Slider** (`a-slider`) — https://antdv.com/components/slider
+  Props: `value`, `min`, `max`, `step`, `range`, `marks`, `vertical`, `tooltip`, `disabled`.
+
+- **Switch** (`a-switch`) — https://antdv.com/components/switch
+  Props: `checked`, `disabled`, `loading`, `size`, `checkedChildren`, `unCheckedChildren`.
+
+- **TimePicker** (`a-time-picker`, `a-time-range-picker`) — https://antdv.com/components/time-picker
+  Props: `value`, `format`, `use12Hours`, `hourStep`, `minuteStep`, `secondStep`, `disabledTime`.
+
+- **Transfer** (`a-transfer`) — https://antdv.com/components/transfer
+  Props: `dataSource`, `targetKeys`, `selectedKeys`, `render`, `showSearch`, `filterOption`, `titles`.
+
+- **TreeSelect** (`a-tree-select`, `a-tree-select-node`) — https://antdv.com/components/tree-select
+  Props: `value`, `treeData`, `multiple`, `treeCheckable`, `showSearch`, `loadData`, `fieldNames`.
+
+- **Upload** (`a-upload`, `a-upload-dragger`) — https://antdv.com/components/upload
+  Props: `action`, `fileList`, `accept`, `multiple`, `listType` (text/picture/picture-card/picture-circle), `customRequest`, `beforeUpload`, `maxCount`, `directory`.
+
+---
+
+### Data Display
+
+- **Avatar** (`a-avatar`, `a-avatar-group`) — https://antdv.com/components/avatar
+  Props: `src`, `icon`, `size`, `shape` (circle/square), `gap`, `alt`.
+
+- **Badge** (`a-badge`, `a-badge-ribbon`) — https://antdv.com/components/badge
+  Props: `count`, `dot`, `overflowCount`, `showZero`, `status`, `color`, `offset`, `text`, `size`.
+
+- **Calendar** (`a-calendar`) — https://antdv.com/components/calendar
+  Props: `value`, `mode` (month/year), `fullscreen`, `disabledDate`, `headerRender`.
+
+- **Card** (`a-card`, `a-card-meta`, `a-card-grid`) — https://antdv.com/components/card
+  Props: `title`, `extra`, `bordered`, `hoverable`, `loading`, `size`, `cover`, `actions`, `tabList`, `activeTabKey`.
+
+- **Carousel** (`a-carousel`) — https://antdv.com/components/carousel
+  Props: `autoplay`, `dots`, `effect` (scrollx/fade), `easing`, `dotPosition`.
+
+- **Collapse** (`a-collapse`, `a-collapse-panel`) — https://antdv.com/components/collapse
+  Props: `activeKey`, `accordion`, `bordered`, `ghost`, `expandIconPosition`, `items`.
+
+- **Descriptions** (`a-descriptions`, `a-descriptions-item`) — https://antdv.com/components/descriptions
+  Props: `title`, `bordered`, `column`, `size`, `layout`, `colon`, `extra`, `items`.
+
+- **Empty** (`a-empty`) — https://antdv.com/components/empty
+  Props: `description`, `image`, `imageStyle`.
+
+- **Image** (`a-image`, `a-image-preview-group`) — https://antdv.com/components/image
+  Props: `src`, `alt`, `width`, `height`, `fallback`, `preview`, `placeholder`.
+
+- **List** (`a-list`, `a-list-item`, `a-list-item-meta`) — https://antdv.com/components/list
+  Props: `dataSource`, `renderItem`, `itemLayout` (horizontal/vertical), `loading`, `pagination`, `split`, `grid`, `header`, `footer`.
+
+- **Popover** (`a-popover`) — https://antdv.com/components/popover
+  Props: `title`, `content`, `trigger`, `placement`, `open`, `arrow`.
+
+- **QRCode** (`a-qr-code`) — https://antdv.com/components/qr-code
+  Props: `value`, `size`, `color`, `bgColor`, `bordered`, `status`, `icon`, `iconSize`, `errorLevel`.
+
+- **Segmented** (`a-segmented`) — https://antdv.com/components/segmented
+  Props: `options`, `value`, `disabled`, `block`, `size`.
+
+- **Statistic** (`a-statistic`, `a-statistic-countdown`) — https://antdv.com/components/statistic
+  Props: `value`, `title`, `prefix`, `suffix`, `precision`, `formatter`, `valueStyle`.
+
+- **Table** (`a-table`, `a-table-column`, `a-table-column-group`) — https://antdv.com/components/table
+  Props: `dataSource`, `columns`, `rowKey`, `pagination`, `loading`, `scroll`, `bordered`, `size`, `expandable`, `rowSelection`, `sticky`, `virtual`.
+  Column props: `title`, `dataIndex`, `key`, `render`, `sorter`, `filters`, `onFilter`, `fixed`, `ellipsis`, `align`, `width`, `customCell`.
+
+- **Tabs** (`a-tabs`, `a-tab-pane`) — https://antdv.com/components/tabs
+  Props: `activeKey`, `type` (line/card/editable-card), `size`, `tabPosition` (top/right/bottom/left), `animated`, `items`.
+
+- **Tag** (`a-tag`, `a-checkable-tag`) — https://antdv.com/components/tag
+  Props: `color`, `closable`, `icon`, `bordered`.
+
+- **Timeline** (`a-timeline`, `a-timeline-item`) — https://antdv.com/components/timeline
+  Props: `mode` (left/alternate/right), `reverse`, `pending`, `items`.
+
+- **Tooltip** (`a-tooltip`) — https://antdv.com/components/tooltip
+  Props: `title`, `placement`, `trigger`, `open`, `color`, `arrow`, `overlayStyle`.
+
+- **Tour** (`a-tour`) — https://antdv.com/components/tour
+  Props: `open`, `steps`, `current`, `type`, `mask`, `scrollIntoViewOptions`.
+
+- **Tree** (`a-tree`, `a-directory-tree`) — https://antdv.com/components/tree
+  Props: `treeData`, `checkedKeys`, `selectedKeys`, `expandedKeys`, `checkable`, `selectable`, `draggable`, `loadData`, `fieldNames`, `virtual`.
+
+---
+
+### Feedback
+
+- **Alert** (`a-alert`) — https://antdv.com/components/alert
+  Props: `type` (success/info/warning/error), `message`, `description`, `showIcon`, `banner`, `closable`, `action`.
+
+- **Drawer** (`a-drawer`) — https://antdv.com/components/drawer
+  Props: `open`, `title`, `placement` (top/right/bottom/left), `width`, `height`, `closable`, `mask`, `maskClosable`, `footer`, `extra`, `destroyOnClose`.
+
+- **Message** (imperative API) — https://antdv.com/components/message
+  ```ts
+  import { message } from 'ant-design-vue'
+  message.success('Done!')
+  message.error('Failed')
+  message.info('Info')
+  message.warning('Warn')
+  message.loading('Loading...')
+  ```
+
+- **Modal** (`a-modal`, `a-modal.confirm()`) — https://antdv.com/components/modal
+  Props: `open`, `title`, `width`, `centered`, `closable`, `maskClosable`, `footer`, `destroyOnClose`, `confirmLoading`.
+  Static methods: `Modal.confirm()`, `Modal.info()`, `Modal.success()`, `Modal.error()`, `Modal.warning()`.
+
+- **Notification** (imperative API) — https://antdv.com/components/notification
+  ```ts
+  import { notification } from 'ant-design-vue'
+  notification.open({ message: 'Title', description: 'Body', placement: 'topRight' })
+  notification.success(...)
+  notification.error(...)
+  ```
+
+- **Popconfirm** (`a-popconfirm`) — https://antdv.com/components/popconfirm
+  Props: `title`, `description`, `okText`, `cancelText`, `okType`, `icon`, `disabled`, `onConfirm`, `onCancel`.
+
+- **Progress** (`a-progress`) — https://antdv.com/components/progress
+  Props: `type` (line/circle/dashboard), `percent`, `status` (success/exception/normal/active), `strokeColor`, `trailColor`, `size`, `showInfo`, `format`.
+
+- **Result** (`a-result`) — https://antdv.com/components/result
+  Props: `status` (success/error/info/warning/404/403/500), `title`, `subTitle`, `icon`, `extra`.
+
+- **Skeleton** (`a-skeleton`, `a-skeleton-button`, `a-skeleton-avatar`, `a-skeleton-input`, `a-skeleton-image`) — https://antdv.com/components/skeleton
+  Props: `active`, `loading`, `avatar`, `title`, `paragraph`.
+
+- **Spin** (`a-spin`) — https://antdv.com/components/spin
+  Props: `spinning`, `tip`, `size`, `delay`, `indicator`.
+
+- **Watermark** (`a-watermark`) — https://antdv.com/components/watermark
+  Props: `content`, `font`, `color`, `rotate`, `gap`, `offset`, `zIndex`, `width`, `height`, `image`.
+
+---
+
+### Other
+
+- **Affix** (`a-affix`) — https://antdv.com/components/affix
+  Props: `offsetTop`, `offsetBottom`, `target`.
+
+- **App** (`a-app`) — https://antdv.com/components/app
+  Provides context for `message`, `modal`, `notification` APIs within a component tree.
+  Use `App.useApp()` composable to access imperative APIs in setup functions.
+
+- **ConfigProvider** (`a-config-provider`) — https://antdv.com/components/config-provider
+  Props: `locale`, `theme`, `prefixCls`, `iconPrefixCls`, `direction` (ltr/rtl), `componentSize`, `virtual`, `getPopupContainer`, `renderEmpty`.
+
+- **FloatButton** (`a-float-button`, `a-float-button-group`, `a-back-top`) — https://antdv.com/components/float-button
+  Props: `type`, `shape`, `icon`, `description`, `tooltip`, `href`, `target`, `badge`.
+
+---
+
+## Theming (Design Tokens)
+
+Ant Design Vue 4.x uses a CSS-in-JS token system via `ConfigProvider`.
+
+```ts
+<a-config-provider
+  :theme="{
+    token: {
+      colorPrimary: '#00b96b',
+      borderRadius: 4,
+      colorBgContainer: '#f6ffed',
+    },
+    algorithm: theme.darkAlgorithm, // or theme.compactAlgorithm
+  }"
+>
+```
+
+Import algorithms:
+```ts
+import { theme } from 'ant-design-vue'
+const { defaultAlgorithm, darkAlgorithm, compactAlgorithm } = theme
+```
+
+---
+
+## Internationalization
+
+```ts
+import { ConfigProvider } from 'ant-design-vue'
+import enUS from 'ant-design-vue/es/locale/en_US'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
+
+// In template:
+// <a-config-provider :locale="enUS">
+```
+
+Available locales: en_US, zh_CN, zh_TW, ja_JP, ko_KR, fr_FR, de_DE, es_ES, pt_BR, ru_RU, ar_EG, and more.
+
+---
+
+## Form Validation
+
+```ts
+import { Form } from 'ant-design-vue'
+const { useForm } = Form
+
+const formState = reactive({ username: '', password: '' })
+const rules = {
+  username: [{ required: true, message: 'Required', trigger: 'blur' }],
+  password: [{ min: 6, message: 'Min 6 chars', trigger: 'change' }],
+}
+const { validate, validateInfos, resetFields } = useForm(formState, rules)
+
+const onSubmit = () => validate().then(() => { /* submit */ })
+```
+
+---
+
+## Table Column Definition Pattern
+
+```ts
+const columns = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    sorter: (a, b) => a.name.localeCompare(b.name),
+    fixed: 'left',
+    width: 150,
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    customRender: ({ record }) => h(Button, { onClick: () => edit(record) }, 'Edit'),
+  },
+]
+```
+
+---
+
+## Ecosystem
+
+| Package | Description | URL |
+|---|---|---|
+| `@ant-design/icons-vue` | Icon library | https://github.com/ant-design/ant-design-icons |
+| `@ant-design-vue/nuxt` | Nuxt 3 module | https://github.com/vueComponent/ant-design-vue-nuxt |
+| `@formily/antdv` | Formily form engine integration | https://github.com/formilyjs/antdv |
+| `ant-design-x-vue` | AI interface components (Ant Design X spec) | https://github.com/wzc520pyfm/ant-design-x-vue |
+| `ant-design-vue-helper` | VS Code extension | https://marketplace.visualstudio.com/items?itemName=ant-design-vue.vscode-ant-design-vue-helper |
+| `unplugin-vue-components` | Auto-import resolver | https://github.com/unplugin/unplugin-vue-components |
+
+---
+
+## Key URLs
+
+- Docs (EN): https://antdv.com/docs/vue/introduce
+- Components overview: https://antdv.com/components/overview
+- GitHub: https://github.com/vueComponent/ant-design-vue
+- npm: https://www.npmjs.com/package/ant-design-vue
+- Changelog: https://github.com/vueComponent/ant-design-vue/blob/main/CHANGELOG.en-US.md
+- Design tokens: https://antdv.com/docs/vue/customize-theme
+- Ant Design spec (React reference): https://ant.design
