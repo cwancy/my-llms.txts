@@ -1,0 +1,2946 @@
+# Naive UI — LLM Reference
+# Source: https://github.com/tusen-ai/naive-ui
+# License: MIT
+# Latest stable version: 2.44.1
+# Vue requirement: Vue 3 only (>3.0.5)
+# TypeScript requirement: >4.1
+# Generated from: tusen-ai/naive-ui GitHub repository (main branch)
+
+---
+
+## OVERVIEW
+
+Naive UI is a Vue 3 component library with 90+ components. It is:
+- **Fairly Complete** — 90+ components, all tree-shakable
+- **Theme Customizable** — type-safe theming via TypeScript; no CSS/SCSS/Less required
+- **TypeScript-Based** — written entirely in TypeScript
+- **Fast** — virtual lists on all data-heavy components by default (select, tree, transfer, table, cascader)
+
+No CSS imports are required to use components. Styles are injected via CSS-in-JS (css-render).
+
+Repository: https://github.com/tusen-ai/naive-ui
+Documentation: https://www.naiveui.com
+Community: https://discord.gg/Pqv7Mev5Dd
+
+---
+
+## INSTALLATION
+
+```bash
+# Install naive-ui
+npm i naive-ui
+
+# Optional: fonts via vfonts
+npm i vfonts
+
+# Recommended icon library
+# See https://www.xicons.org
+npm i @vicons/ionicons5   # or any @vicons/* package
+```
+
+---
+
+## USAGE PATTERNS
+
+### Pattern 1: Direct Import (Recommended — enables tree-shaking)
+
+```vue
+<!-- Options API -->
+<template>
+  <n-button>naive-ui</n-button>
+</template>
+
+<script>
+import { defineComponent } from 'vue'
+import { NButton } from 'naive-ui'
+export default defineComponent({
+  components: { NButton }
+})
+</script>
+```
+
+```vue
+<!-- Composition API with <script setup> -->
+<template>
+  <n-button>naive-ui</n-button>
+</template>
+
+<script setup>
+import { NButton } from 'naive-ui'
+</script>
+```
+
+### Pattern 2: Global Installation (no tree-shaking)
+
+```js
+import naive from 'naive-ui'
+import { createApp } from 'vue'
+const app = createApp(App)
+app.use(naive)
+// All components available globally as <n-button>, <n-input>, etc.
+```
+
+### Pattern 3: Selective Global Installation (preserves tree-shaking)
+
+```js
+import { createApp } from 'vue'
+import { NButton, NInput, NConfigProvider } from 'naive-ui'
+const app = createApp(App)
+app.component('NButton', NButton)
+app.component('NInput', NInput)
+app.component('NConfigProvider', NConfigProvider)
+```
+
+### Pattern 4: Auto-Import with unplugin-vue-components (Vite)
+
+```bash
+npm i -D unplugin-vue-components unplugin-auto-import
+```
+
+```js
+// vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
+import AutoImport from 'unplugin-auto-import/vite'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    Components({
+      resolvers: [NaiveUiResolver()]
+    }),
+    AutoImport({
+      imports: ['vue', 'vue-router'],
+      resolvers: [NaiveUiResolver()]
+    })
+  ]
+})
+```
+
+### Pattern 5: UMD / CDN
+
+```html
+<script src="https://unpkg.com/naive-ui/dist/index.js"></script>
+<!-- Available as window.naive -->
+```
+
+---
+
+## TYPESCRIPT / VOLAR SUPPORT
+
+Add to `tsconfig.json` for global component type inference with Volar:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["naive-ui/volar"]
+  }
+}
+```
+
+This enables IntelliSense and prop checking for all Naive UI components used without explicit imports.
+
+---
+
+## CONFIGURATION SYSTEM — NConfigProvider
+
+`NConfigProvider` is the root configuration component. Wrap your entire app (or a subtree) with it to control theme, locale, and namespace.
+
+```vue
+<template>
+  <n-config-provider :theme="theme" :locale="locale" :date-locale="dateLocale">
+    <app />
+    <n-global-style />
+  </n-config-provider>
+</template>
+```
+
+### NConfigProvider Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| theme | `Theme \| null \| undefined` | `undefined` | `null` = light theme; `undefined` = inherit from parent; import `darkTheme` for dark |
+| theme-overrides | `GlobalThemeOverrides` | `undefined` | Partial override of theme variables |
+| locale | `NLocale` | `enUS` | UI locale |
+| date-locale | `NDateLocale` | `dateEnUS` | Date locale (for DatePicker etc.) |
+| namespace | `string` | `undefined` | CSS namespace; useful to scope detached DOM elements |
+| inline-theme-disabled | `boolean` | `false` | Disable inline style theme vars (useful for SSR or cleaner devtools). Not reactive. |
+| tag | `string` | `'div'` | Root element tag |
+| rtl | `RTLInfo[]` | `undefined` | RTL style overrides |
+| breakpoints | `Record<string, number>` | Built-in | Responsive breakpoints |
+| abstract | `boolean` | `false` | Render as fragment (no wrapper element) |
+| cls-prefix | `string` | `'n'` | CSS class prefix |
+| preflight-style-disabled | `boolean` | `false` | Disable preflight (base reset) styles |
+
+### Key Notes on NConfigProvider
+- `theme={null}` explicitly forces light theme, ignoring any parent theme.
+- `theme={undefined}` (default) inherits from the nearest ancestor `NConfigProvider`.
+- Multiple nested `NConfigProvider` instances are supported — inner overrides outer.
+- Some parts of components are mounted to `document.body` (e.g. modals, dropdowns). Use `namespace` prop to scope their CSS class.
+
+---
+
+## THEMING SYSTEM
+
+### Built-in Themes
+
+```js
+import { darkTheme, lightTheme } from 'naive-ui'
+```
+
+`lightTheme` is the default (components are light themed without any config).
+`darkTheme` switches all components to dark mode.
+
+### Applying Dark Theme
+
+```vue
+<template>
+  <n-config-provider :theme="darkTheme">
+    <app />
+    <!-- n-global-style syncs theme to document.body (bg color, text color, etc.) -->
+    <n-global-style />
+  </n-config-provider>
+</template>
+
+<script setup>
+import { darkTheme } from 'naive-ui'
+</script>
+```
+
+### OS-Adaptive Theme
+
+```js
+import { useOsTheme, darkTheme } from 'naive-ui'
+const osTheme = useOsTheme() // Returns Ref<'dark' | 'light' | null>
+const theme = computed(() => osTheme.value === 'dark' ? darkTheme : null)
+```
+
+### Theme Overrides (Global)
+
+Use `GlobalThemeOverrides` type for full type safety:
+
+```vue
+<script lang="ts">
+import { NConfigProvider } from 'naive-ui'
+import type { GlobalThemeOverrides } from 'naive-ui'
+
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    primaryColor: '#FF0000',
+    primaryColorHover: '#FF3333',
+    borderRadius: '4px',
+    fontWeightStrong: '600'
+  },
+  Button: {
+    textColor: '#FF0000'
+  },
+  Select: {
+    peers: {
+      InternalSelection: { textColor: '#FF0000' },
+      InternalSelectMenu: { borderRadius: '6px' }
+    }
+  },
+  DataTable: {
+    paginationMargin: '40px 0 0 0',
+    peers: {
+      Empty: { textColor: '#ccc' },
+      Pagination: { itemTextColor: '#ccc' }
+    }
+  }
+}
+</script>
+<template>
+  <n-config-provider :theme-overrides="themeOverrides">
+    <app />
+  </n-config-provider>
+</template>
+```
+
+### Component-Level Theme Override
+
+Each component also accepts a `theme-overrides` prop for local overrides:
+
+```vue
+<n-button :theme-overrides="{ textColor: 'red' }">Red Button</n-button>
+```
+
+### Reading Theme Variables in Components
+
+```js
+import { useThemeVars } from 'naive-ui'
+const themeVars = useThemeVars()
+// themeVars.value.primaryColor, themeVars.value.borderRadius, etc.
+```
+
+### Theme Editor (Development Tool)
+
+The built-in theme editor must be explicitly imported — it is NOT included in global install:
+
+```vue
+import { NThemeEditor } from 'naive-ui'
+<n-theme-editor>
+  <app />
+</n-theme-editor>
+```
+
+### Global Style Component
+
+`NGlobalStyle` syncs theme CSS variables to `document.body`. Required for dark mode to affect body background and scrollbar colors:
+
+```vue
+<n-config-provider :theme="darkTheme">
+  <app />
+  <n-global-style />
+</n-config-provider>
+```
+
+---
+
+## INTERNATIONALIZATION
+
+### Available Locales
+
+```js
+import {
+  enUS, zhCN, zhTW, jaJP, koKR, ruRU, ukUA, deDE, frFR, itIT,
+  ptBR, ptPT, esAR, idID, plPL, skSK, hrHR, arDZ, nlNL, thTH,
+  trTR, viVN, heIL, nbNO, fiFI, svSE, ukUA, csCS, etEE, faIR,
+  // ...and more
+  dateEnUS, dateZhCN, dateZhTW, dateJaJP, dateKoKR, dateDeDE,
+  dateFrFR, dateRuRU, datePtBR, dateItIT, dateUkUA, dateNlNL,
+  // ...and more
+} from 'naive-ui'
+```
+
+### Applying Locale
+
+```vue
+<template>
+  <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
+    <app />
+  </n-config-provider>
+</template>
+<script setup>
+import { zhCN, dateZhCN } from 'naive-ui'
+</script>
+```
+
+---
+
+## FONTS
+
+Naive UI works with the optional `vfonts` package:
+
+```js
+// main.ts / app entry
+import 'vfonts/Lato.css'      // General font
+import 'vfonts/FiraCode.css'  // Monospace font
+```
+
+If using Lato or OpenSans, configure font weight:
+
+```vue
+<n-config-provider :theme-overrides="{ common: { fontWeightStrong: '600' } }">
+  <app />
+</n-config-provider>
+```
+
+To use custom fonts without vfonts, you need `NGlobalStyle`:
+
+```vue
+<n-config-provider :theme-overrides="{ common: { fontFamily: 'Inter, sans-serif' } }">
+  <app />
+  <n-global-style />  <!-- Required for font to respond to theme-overrides -->
+</n-config-provider>
+```
+
+---
+
+## SERVER-SIDE RENDERING (SSR)
+
+### Requirements
+
+1. All `@css-render/*` and `css-render` packages in the build must be version `>=0.15.14`.
+2. All references to any `@css-render/*` / `css-render` package must resolve to a single version (no duplicates). Check your lock file for `css-render`.
+
+### SSR Setup
+
+```js
+// server entry
+import { createSSRApp } from 'vue'
+import { setup } from '@css-render/vue3-ssr'
+import { defineComponent } from 'vue'
+
+const app = createSSRApp(App)
+const { collect } = setup(app)
+
+// After renderToString:
+const html = await renderToString(app)
+const cssText = collect() // Inject this into <head>
+```
+
+### SSR with Inline Theme Disabled
+
+Inline theme variables can bloat SSR HTML. Disable them:
+
+```vue
+<n-config-provider inline-theme-disabled>
+  <app />
+</n-config-provider>
+```
+
+**Trade-off:** Do not use `inline-theme-disabled` if `theme-overrides` change frequently — stale style elements accumulate.
+
+### Known SSR Limitations
+
+- `n-scrollbar` has SSR bugs in older Vue versions.
+- `n-data-table` SSR works from Vue >= 3.2.36.
+
+### Nuxt.js
+
+Install the Nuxt module:
+```bash
+npm i -D @nuxtjs/naive-ui
+```
+```js
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/naive-ui']
+})
+```
+
+---
+
+## SUPPORTED PLATFORMS
+
+| Platform | Support |
+|----------|---------|
+| Chrome (latest 2) | ✓ |
+| Firefox (latest 2) | ✓ |
+| Safari (latest 2) | ✓ |
+| Edge (latest 2) | ✓ |
+| Internet Explorer | ✗ Not supported |
+| Vue 2 | ✗ Not supported |
+| Vue 3 (>3.0.5) | ✓ |
+| TypeScript (>4.1) | ✓ |
+
+---
+
+## CONTROLLED vs UNCONTROLLED COMPONENTS
+
+Most Naive UI components support both modes:
+
+- **Uncontrolled**: Use `default-value` prop. Component manages its own state.
+- **Controlled**: Use `value` + `on-update:value`. Parent owns the state.
+
+```vue
+<!-- Uncontrolled -->
+<n-input default-value="initial text" />
+
+<!-- Controlled -->
+<n-input :value="val" @update:value="val = $event" />
+<!-- or with v-model -->
+<n-input v-model:value="val" />
+```
+
+---
+
+## COMPONENT CATALOGUE
+
+### Common / General
+- `NButton`, `NButtonGroup`
+- `NIcon`, `NIconWrapper`
+- `NAvatar`, `NAvatarGroup`
+- `NBadge`
+- `NTag`
+- `NTooltip`
+- `NPopover`
+- `NCard`
+- `NCollapse`, `NCollapseItem`
+- `NDivider`
+- `NEl` (apply theme vars to arbitrary elements)
+- `NScrollbar`
+- `NSpin`
+- `NEmpty`
+- `NResult`
+- `NWatermark`
+- `NImage`, `NImageGroup`
+- `NCarousel`
+- `NCode`
+- `NLog`
+- `NNumberAnimation`
+- `NStatistic`
+- `NCountdown`
+- `NThing`
+- `NMarkdown` (not built-in — use third party)
+- `NTypography`, `NH1`–`NH6`, `NP`, `NText`, `NA`, `NUl`, `NOl`, `NLi`, `NBlockquote`, `NHr`
+
+### Layout
+- `NLayout`, `NLayoutHeader`, `NLayoutContent`, `NLayoutSider`, `NLayoutFooter`
+- `NGrid`, `NGridItem` (`NGi`)
+- `NSpace`
+- `NFlex`
+- `NSplit`
+- `NAnchor`, `NAnchorLink`
+- `NAffix`
+- `NBackTop`
+
+### Navigation
+- `NMenu`
+- `NTabs`, `NTabPane`
+- `NBreadcrumb`, `NBreadcrumbItem`
+- `NDropdown`
+- `NPageHeader`
+- `NSteps`, `NStep`
+
+### Form / Data Entry
+- `NForm`, `NFormItem`, `NFormItemGi`, `NFormItemRow`
+- `NInput`, `NInputGroup`, `NInputGroupLabel`
+- `NInputNumber`
+- `NSelect`
+- `NCascader`
+- `NTreeSelect`
+- `NCheckbox`, `NCheckboxGroup`
+- `NRadio`, `NRadioGroup`, `NRadioButton`
+- `NSwitch`
+- `NSlider`
+- `NRate`
+- `NDatePicker`
+- `NTimePicker`
+- `NColorPicker`
+- `NAutoComplete`
+- `NMention`
+- `NDynamicInput`
+- `NDynamicTags`
+- `NTransfer`
+- `NUpload`, `NUploadDragger`
+
+### Data Display
+- `NDataTable`
+- `NList`, `NListItem`, `NThing`
+- `NTree`
+- `NPagination`
+- `NDescriptions`, `NDescriptionsItem`
+- `NTimeline`, `NTimelineItem`
+- `NCalendar`
+- `NTable` (simple HTML table with naive styles)
+- `NProgress`
+
+### Feedback / Overlay
+- `NModal`
+- `NDialog` + `useDialog` / `NDialogProvider`
+- `NMessage` + `useMessage` / `NMessageProvider`
+- `NNotification` + `useNotification` / `NNotificationProvider`
+- `NAlert`
+- `NPopconfirm`
+- `NDrawer`, `NDrawerContent`
+- `NLoadingBar` + `useLoadingBar` / `NLoadingBarProvider`
+
+### Configuration
+- `NConfigProvider`
+- `NGlobalStyle`
+- `NThemeEditor`
+- `NElement` (`NEl`)
+
+### Deprecated
+- `NLegacyTransfer` (use `NTransfer`)
+
+---
+
+## COMPONENT API REFERENCE
+
+### NButton
+
+```
+import { NButton, NButtonGroup } from 'naive-ui'
+```
+
+#### Button Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| attr-type | `'button' \| 'submit' \| 'reset'` | `'button'` | Native button type attribute |
+| block | `boolean` | `false` | Display as block-level element |
+| bordered | `boolean` | `true` | Show border |
+| circle | `boolean` | `false` | Round/circle button |
+| color | `string` | `undefined` | Button color (#FFF, #FFFFFF, yellow, rgb(0,0,0)) |
+| dashed | `boolean` | `false` | Dashed border |
+| disabled | `boolean` | `false` | Disabled state |
+| focusable | `boolean` | `true` | Whether focusable |
+| ghost | `boolean` | `false` | Ghost (transparent background) |
+| native-focus-behavior | `boolean` | non-Safari default | Follow native browser focus behavior |
+| icon-placement | `'left' \| 'right'` | `'left'` | Icon position |
+| keyboard | `boolean` | `true` | Keyboard interaction support |
+| loading | `boolean` | `false` | Show loading spinner |
+| quaternary | `boolean` | `false` | Quaternary style variant |
+| render-icon | `() => VNodeChild` | `undefined` | Render function for icon |
+| round | `boolean` | `false` | Rounded corners |
+| secondary | `boolean` | `false` | Secondary style variant |
+| size | `'tiny' \| 'small' \| 'medium' \| 'large'` | `'medium'` | Button size |
+| spin-props | `{ strokeWidth?, stroke?, scale?, radius? }` | `undefined` | Loading spinner props (v2.44.0+) |
+| strong | `boolean` | `false` | Bold text |
+| tag | `string` | `'button'` | HTML tag to render as |
+| tertiary | `boolean` | `false` | Tertiary style variant |
+| text | `boolean` | `false` | Text-only button (no background/border) |
+| text-color | `string` | `undefined` | Text color |
+| type | `'default' \| 'tertiary' \| 'primary' \| 'success' \| 'info' \| 'warning' \| 'error'` | `'default'` | Button type/color variant |
+
+#### ButtonGroup Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| size | `'tiny' \| 'small' \| 'medium' \| 'large'` | `undefined` | Overrides all child button sizes |
+| vertical | `boolean` | `false` | Vertical button group |
+
+#### Button Slots
+
+| Name | Description |
+|------|-------------|
+| default | Button content |
+| icon | Button icon |
+
+---
+
+### NInput
+
+```
+import { NInput, NInputGroup, NInputGroupLabel } from 'naive-ui'
+```
+
+#### Key Input Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string \| [string, string] \| null` | `undefined` | Input value |
+| default-value | `string \| [string, string] \| null` | `null` | Default value (uncontrolled) |
+| type | `'text' \| 'password' \| 'textarea'` | `'text'` | Input type |
+| placeholder | `string \| [string, string]` | `undefined` | Placeholder text |
+| clearable | `boolean` | `false` | Show clear button |
+| disabled | `boolean` | `false` | Disabled state |
+| readonly | `boolean` | `false` | Read-only |
+| size | `'tiny' \| 'small' \| 'medium' \| 'large'` | `'medium'` | Input size |
+| round | `boolean` | `false` | Rounded style |
+| show-password-on | `'click' \| 'mousedown'` | `undefined` | When to reveal password |
+| status | `'success' \| 'warning' \| 'error'` | `undefined` | Validation status |
+| loading | `boolean` | `undefined` | Show loading state |
+| prefix | Slot | — | Prefix content inside input |
+| suffix | Slot | — | Suffix content inside input |
+| maxlength | `number` | `undefined` | Max character length |
+| show-count | `boolean` | `false` | Show character count |
+| autosize | `boolean \| { minRows, maxRows }` | `false` | Auto-resize for textarea |
+| rows | `number` | `3` | Textarea rows |
+| pair | `boolean` | `false` | Two-field input (returns [string, string]) |
+| separator | `string` | `undefined` | Separator for pair input |
+| input-props | `HTMLInputElement attributes` | `undefined` | Native input element attributes |
+| autofocus | `boolean` | `false` | Auto focus on mount |
+| passively-activated | `boolean` | `false` | Only show textarea styling when focused |
+| allow-input | `(value: string) => boolean` | `undefined` | Filter input characters |
+| on-update:value | `(value: string) => void` | — | Value change handler |
+| on-blur | `(e: FocusEvent) => void` | — | Blur handler |
+| on-focus | `(e: FocusEvent) => void` | — | Focus handler |
+| on-input | `(value: string) => void` | — | Input event handler |
+| on-change | `(value: string) => void` | — | Change event handler (on blur) |
+| on-keydown | `(e: KeyboardEvent) => void` | — | Keydown handler |
+| on-keyup | `(e: KeyboardEvent) => void` | — | Keyup handler |
+| on-clear | `() => void` | — | Clear handler |
+
+#### Input Methods (via ref)
+
+| Method | Description |
+|--------|-------------|
+| focus() | Focus the input |
+| blur() | Blur the input |
+| select() | Select all text |
+| scrollTo(options) | Scroll textarea to position |
+
+---
+
+### NSelect
+
+```
+import { NSelect } from 'naive-ui'
+```
+
+#### Key Select Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string \| number \| array \| null` | `undefined` | Selected value(s) |
+| default-value | `string \| number \| array \| null` | `null` | Default value (uncontrolled) |
+| options | `Array<SelectOption \| SelectGroupOption>` | `[]` | Options array |
+| multiple | `boolean` | `false` | Allow multiple selection |
+| filterable | `boolean` | `false` | Allow filtering/search |
+| clearable | `boolean` | `false` | Show clear button |
+| disabled | `boolean` | `false` | Disabled state |
+| loading | `boolean` | `false` | Loading state |
+| placeholder | `string` | `'Please Select'` | Placeholder |
+| size | `'tiny' \| 'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| status | `'success' \| 'warning' \| 'error'` | `undefined` | Validation status |
+| tag | `boolean` | `false` | Taggable (create new values) |
+| max-tag-count | `number \| 'responsive'` | `undefined` | Max tags in multiple mode |
+| virtual-scroll | `boolean` | `true` | Use virtual list (leave enabled for large option lists) |
+| remote | `boolean` | `false` | Remote/async filtering mode |
+| filter | `(pattern: string, option: SelectOption) => boolean` | Built-in | Custom filter function |
+| render-label | `(option: SelectOption) => VNodeChild` | `undefined` | Custom option label renderer |
+| render-option | `(info: { node, option, selected }) => VNodeChild` | `undefined` | Custom option renderer |
+| render-tag | `(info: { option, handleClose }) => VNodeChild` | `undefined` | Custom tag renderer |
+| show-checkmark | `boolean` | `true` | Show checkmark on selected option |
+| consistent-menu-width | `boolean` | `true` | Menu width matches input width |
+| menu-props | `HTMLDivElement attributes` | `undefined` | Menu container attributes |
+| on-update:value | `(value, option) => void` | — | Value change handler |
+| on-search | `(value: string) => void` | — | Search input handler |
+| on-scroll | `(e: Event) => void` | — | Menu scroll handler |
+| on-blur | `(e: FocusEvent) => void` | — | Blur handler |
+| on-focus | `(e: FocusEvent) => void` | — | Focus handler |
+
+#### SelectOption Shape
+
+```ts
+interface SelectOption {
+  label: string
+  value: string | number
+  disabled?: boolean
+  class?: string
+  style?: CSSProperties
+}
+interface SelectGroupOption {
+  type: 'group'
+  label: string
+  key: string | number
+  children: SelectOption[]
+}
+```
+
+---
+
+### NForm & NFormItem
+
+```
+import { NForm, NFormItem, NFormItemGi, NFormItemRow } from 'naive-ui'
+```
+
+#### NForm Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| model | `object` | `{}` | Data model object (values read/written by path) |
+| rules | `FormRules` | `{}` | Validation rules keyed by model path |
+| disabled | `boolean` | `false` | Disable all form items |
+| inline | `boolean` | `false` | Inline (horizontal) layout |
+| label-width | `number \| string \| 'auto'` | `undefined` | Label width; 'auto' adjusts automatically |
+| label-align | `'left' \| 'right'` | `-` | Label text alignment |
+| label-placement | `'left' \| 'top'` | `'top'` | Label position |
+| show-feedback | `boolean` | `true` | Show validation feedback area |
+| show-label | `boolean` | `true` | Show labels |
+| show-require-mark | `boolean` | `-` | Show required asterisk |
+| require-mark-placement | `'left' \| 'right' \| 'right-hanging'` | `'right'` | Position of required mark |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Form size |
+| validate-messages | `FormValidateMessages` | `undefined` | Custom validation messages |
+
+#### NForm Methods (use with ref)
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| validate | `(callback?, shouldRuleBeApplied?) => Promise<void>` | Validate all form items |
+| restoreValidation | `() => void` | Clear all validation results |
+
+#### FormRules Type
+
+```ts
+type FormRules = {
+  [path: string]: FormItemRule | FormItemRule[] | FormRules
+}
+```
+
+#### FormItemRule Properties
+
+Built on `async-validator`. Key properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| required | `boolean` | Mark as required |
+| trigger | `string \| string[]` | Trigger type: `'input'`, `'blur'`, `'change'`, `'focus'` |
+| message | `string` | Error message |
+| renderMessage | `() => VNodeChild` | Render function for error message (v2.29.1+) |
+| validator | `(rule, value) => boolean \| Error` | Sync validator |
+| asyncValidator | `(rule, value, callback) => void` | Async validator (callback-style) |
+| type | `string` | async-validator type (e.g. `'number'`, `'email'`, `'url'`) |
+| level | `'error' \| 'warning'` | Validation level |
+| key | `string` | Unique key for partial rule application |
+
+#### NFormItem Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| path | `string` | `undefined` | Model property path for this item |
+| label | `string` | `undefined` | Label text |
+| rule | `FormItemRule \| FormItemRule[]` | `undefined` | Item-level rule (merged with form rules) |
+| rule-path | `string` | `undefined` | Path to read rules from parent form's rules object |
+| required | `boolean` | `false` | Show required symbol (does NOT affect validation) |
+| show-feedback | `boolean` | `true` | Show feedback area |
+| show-label | `boolean` | `true` | Show label |
+| label-width | `number \| string \| 'auto'` | `undefined` | Override form label-width |
+| label-align | `'left' \| 'right'` | `undefined` | Override form label-align |
+| label-placement | `'left' \| 'top'` | `undefined` | Override form label-placement |
+| label-style | `CSSProperties \| string` | `undefined` | Label style |
+| label-props | `LabelHTMLAttributes` | `undefined` | Label element HTML attributes |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| validation-status | `'error' \| 'success' \| 'warning'` | `undefined` | Manual validation status |
+| feedback | `string` | `undefined` | Manual feedback message (overrides rule validation) |
+| feedback-class | `string` | `undefined` | Feedback element class |
+| feedback-style | `string \| object` | `undefined` | Feedback element style |
+| content-class | `string` | `undefined` | Content class (v2.43.0+) |
+| content-style | `string \| object` | `undefined` | Content style (v2.43.0+) |
+| first | `boolean` | `false` | Only show first error message |
+| ignore-path-change | `boolean` | `false` | Don't clear validation on path change |
+
+#### NFormItem Methods (use with ref)
+
+| Method | Description |
+|--------|-------------|
+| validate(trigger?, callback?) | Validate this item |
+| restoreValidation() | Clear validation result |
+
+#### Form Usage Example
+
+```vue
+<template>
+  <n-form ref="formRef" :model="formValue" :rules="rules" label-placement="left" label-width="auto">
+    <n-form-item label="Username" path="username">
+      <n-input v-model:value="formValue.username" placeholder="Enter username" />
+    </n-form-item>
+    <n-form-item label="Age" path="age">
+      <n-input-number v-model:value="formValue.age" :min="0" :max="150" />
+    </n-form-item>
+    <n-form-item>
+      <n-button @click="handleSubmit">Submit</n-button>
+    </n-form-item>
+  </n-form>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { NForm, NFormItem, NInput, NInputNumber, NButton } from 'naive-ui'
+import type { FormInst, FormRules } from 'naive-ui'
+
+const formRef = ref<FormInst | null>(null)
+const formValue = ref({ username: '', age: null })
+const rules: FormRules = {
+  username: [
+    { required: true, message: 'Username is required', trigger: 'blur' },
+    { min: 3, message: 'At least 3 characters', trigger: 'input' }
+  ],
+  age: { type: 'number', required: true, message: 'Age is required', trigger: 'blur' }
+}
+
+async function handleSubmit() {
+  try {
+    await formRef.value?.validate()
+    console.log('Form is valid')
+  } catch (e) {
+    console.log('Validation failed')
+  }
+}
+</script>
+```
+
+---
+
+### NDataTable
+
+```
+import { NDataTable } from 'naive-ui'
+```
+
+The most feature-rich component. Uses virtual scroll by default for performance.
+
+#### Key DataTable Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| columns | `DataTableColumn[]` | `[]` | Column definitions |
+| data | `object[]` | `[]` | Row data array |
+| row-key | `(row: object) => string \| number` | `undefined` | Key accessor function |
+| loading | `boolean` | `false` | Loading state |
+| bordered | `boolean` | `true` | Show borders |
+| single-line | `boolean` | `true` | Remove vertical dividers between columns |
+| single-column | `boolean` | `false` | Remove horizontal dividers between rows |
+| striped | `boolean` | `false` | Alternating row colors |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Table size |
+| pagination | `false \| PaginationProps` | `false` | Pagination config |
+| remote | `boolean` | `false` | Server-side mode (disables auto-pagination) |
+| max-height | `number \| string` | `undefined` | Max table height; enables vertical scroll |
+| min-height | `number \| string` | `undefined` | Min table height |
+| flex-height | `boolean` | `false` | Table body fills available height |
+| scroll-x | `number \| string` | `undefined` | Horizontal scroll width (needed for fixed columns) |
+| virtual-scroll | `boolean` | `false` | Virtual scrolling for large datasets (requires max-height) |
+| virtual-scroll-x | `boolean` | `false` | Horizontal virtual scrolling (v2.40.0+) |
+| virtual-scroll-header | `boolean` | `false` | Virtual scroll for header (v2.40.0+) |
+| header-height | `number` | `28` | Header row height when virtual-scroll-header is true |
+| min-row-height | `number` | `28` | Min row height for virtual scroll |
+| height-for-row | `(row, index) => number` | `undefined` | Per-row height function (for virtual-scroll-x) |
+| checked-row-keys | `(string \| number)[]` | `undefined` | Controlled checked row keys |
+| default-checked-row-keys | `(string \| number)[]` | `[]` | Initial checked row keys |
+| cascade | `boolean` | `true` | Cascade check for tree data |
+| children-key | `string` | `'children'` | Tree data children field name |
+| indent | `number` | `16` | Tree row indent (px) |
+| default-expand-all | `boolean` | `false` | Expand all tree rows on mount |
+| expanded-row-keys | `(string \| number)[]` | `undefined` | Controlled expanded tree row keys |
+| row-class-name | `string \| (row, index) => string` | `undefined` | Row CSS class |
+| row-props | `(row, index) => HTMLAttributes` | `undefined` | Row HTML attributes |
+| summary | `DataTableCreateSummary` | `undefined` | Summary row renderer |
+| summary-placement | `'top' \| 'bottom'` | `'bottom'` | Summary row position (v2.33.3+) |
+| table-layout | `'auto' \| 'fixed'` | `'auto'` | CSS table-layout |
+| paginate-single-page | `boolean` | `true` | Show pagination when only one page |
+| pagination-behavior-on-filter | `'first' \| 'current'` | `'current'` | Page to go to after filter change |
+| render-cell | `(value, row, col) => VNodeChild` | `undefined` | Global cell renderer (v2.30.5+) |
+| render-expand-icon | `({ expanded, rowData }) => VNodeChild` | `undefined` | Custom expand icon (v2.32.2+) |
+| spin-props | `{ strokeWidth?, stroke?, scale?, radius? }` | `undefined` | Loading spinner props |
+| scrollbar-props | `ScrollbarProps` | `undefined` | Scrollbar customization |
+| get-csv-cell | `(value, row, col) => string` | `undefined` | CSV cell content (v2.40.2+) |
+| get-csv-header | `(cols) => string` | `undefined` | CSV header content (v2.40.2+) |
+| allow-checking-not-loaded | `boolean` | `false` | Allow check on unloaded tree nodes |
+| on-load | `(row) => Promise<void>` | `undefined` | Async tree data loader (v2.27.0+) |
+| on-scroll | `(e: Event) => void` | `undefined` | Table scroll handler |
+| on-update:checked-row-keys | `(keys, rows, meta) => void` | `undefined` | Checked rows change handler |
+| on-update:expanded-row-keys | `(keys) => void` | `undefined` | Expanded rows change handler |
+| on-update:filters | `(filters, column) => void` | `undefined` | Filter change handler |
+| on-update:page | `(page: number) => void` | `undefined` | Page change handler |
+| on-update:page-size | `(pageSize: number) => void` | `undefined` | Page size change handler |
+| on-update:sorter | `(options) => void` | `undefined` | Sorter change handler |
+
+#### DataTableColumn Properties
+
+```ts
+// Base column (for regular data columns)
+interface DataTableBaseColumn {
+  type?: never
+  key: string | number          // Unique key; maps to row data field
+  title?: string | (() => VNodeChild)
+  titleAlign?: 'left' | 'right' | 'center'
+  align?: 'left' | 'right' | 'center'
+  width?: number | string
+  minWidth?: number | string
+  maxWidth?: number | string
+  fixed?: 'left' | 'right'      // Fixed column position
+  resizable?: boolean
+  ellipsis?: boolean | EllipsisProps
+  ellipsisComponent?: 'ellipsis' | 'performant-ellipsis'
+  className?: string
+  rowSpan?: (rowData: object, rowIndex: number) => number
+  colSpan?: (rowData: object, rowIndex: number) => number
+  render?: (rowData: object, rowIndex: number) => VNodeChild  // Custom cell renderer
+  renderExpand?: (rowData: object, rowIndex: number) => VNodeChild
+  renderFilter?: (info: { active, show }) => VNodeChild
+  renderFilterIcon?: (info: { active, show }) => VNodeChild
+  renderFilterMenu?: (info: { hide }) => VNodeChild
+  renderSorter?: (info: { order }) => VNodeChild
+  renderSorterIcon?: (info: { order }) => VNodeChild
+  filter?: boolean | ((value, row) => boolean)
+  filterOptions?: { label, value }[]
+  filterOptionValue?: string | number | null
+  filterOptionValues?: (string | number)[]
+  filterMultiple?: boolean
+  defaultFilterOptionValues?: (string | number)[]
+  defaultFilterOptionValue?: string | number | null
+  sorter?: boolean | 'default' | ((rowA, rowB) => number)
+  sortOrder?: 'ascend' | 'descend' | false
+  defaultSortOrder?: 'ascend' | 'descend' | false
+  multiple?: number              // For multiple sorters; priority
+  tree?: boolean                 // Render as tree expand column
+  disabled?: (row: object, index: number) => boolean
+  expandable?: (row: object) => boolean
+  allowExport?: boolean          // Include in CSV export
+  cellProps?: (rowData, rowIndex) => HTMLAttributes
+  colKey?: string                // Key for column dragging
+}
+
+// Selection column
+interface DataTableSelectionColumn {
+  type: 'selection'
+  fixed?: 'left' | 'right'
+  width?: number | string
+  disabled?: (row: object) => boolean
+  options?: Array<'all' | 'none' | { label, key, onSelect }>
+  multiple?: boolean             // v2.36.0+ (true = checkbox, false = radio)
+}
+
+// Expand column
+interface DataTableExpandColumn {
+  type: 'expand'
+  fixed?: 'left' | 'right'
+  width?: number | string
+  renderExpand: (rowData: object) => VNodeChild
+  expandable?: (rowData: object) => boolean
+}
+```
+
+#### DataTable Methods (use with ref)
+
+| Method | Description |
+|--------|-------------|
+| filter(filters) | Set filters programmatically |
+| clearFilters() | Clear all filters |
+| clearSorter() | Clear all sorters |
+| page(page) | Go to page |
+| sort(columnKey, order) | Sort by column |
+| downloadCsv(options?) | Download table as CSV |
+| scrollTo(options) | Scroll to position |
+| getCheckedData() | Get checked rows data |
+
+---
+
+### NModal
+
+```
+import { NModal } from 'naive-ui'
+```
+
+#### Key Modal Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| show (v-model) | `boolean` | `false` | Visibility |
+| preset | `'dialog' \| 'card'` | `undefined` | Preset layout |
+| title | `string` | `undefined` | Title (preset only) |
+| content | `string` | `undefined` | Content (preset only) |
+| bordered | `boolean` | `false` | Show card border (preset='card') |
+| closable | `boolean` | `true` | Show close button |
+| mask-closable | `boolean` | `true` | Click mask to close |
+| auto-focus | `boolean` | `true` | Auto focus first focusable element |
+| trap-focus | `boolean` | `true` | Trap focus inside modal |
+| display-directive | `'if' \| 'show'` | `'if'` | How to toggle visibility |
+| transform-origin | `'mouse' \| 'center'` | `'mouse'` | Animation origin |
+| to | `string \| HTMLElement` | `'body'` | Mount target |
+| draggable | `boolean` | `false` | Allow dragging |
+| z-index | `number` | `undefined` | CSS z-index |
+| on-update:show | `(show: boolean) => void` | — | Show state change handler |
+| on-after-enter | `() => void` | — | After enter transition |
+| on-after-leave | `() => void` | — | After leave transition |
+
+#### Modal Usage Example
+
+```vue
+<template>
+  <n-modal v-model:show="showModal" preset="card" title="My Modal" style="width: 600px">
+    <p>Modal content here</p>
+  </n-modal>
+  <n-button @click="showModal = true">Open Modal</n-button>
+</template>
+<script setup>
+import { ref } from 'vue'
+const showModal = ref(false)
+</script>
+```
+
+---
+
+### NDialog / useDialog
+
+Programmatic dialog API. Requires `NDialogProvider` to be an ancestor.
+
+```
+import { NDialogProvider, useDialog } from 'naive-ui'
+```
+
+#### Setup
+
+```vue
+<!-- App root -->
+<template>
+  <n-dialog-provider>
+    <app-content />
+  </n-dialog-provider>
+</template>
+```
+
+#### useDialog API
+
+```js
+const dialog = useDialog()
+
+// Methods: dialog.info(), dialog.success(), dialog.warning(), dialog.error(), dialog.create()
+const d = dialog.warning({
+  title: 'Confirm',
+  content: 'Are you sure?',
+  positiveText: 'Yes',
+  negativeText: 'Cancel',
+  onPositiveClick: () => {
+    // Returns false or Promise<false> to prevent close
+    console.log('Confirmed')
+  },
+  onNegativeClick: () => {
+    console.log('Cancelled')
+  }
+})
+
+// Close programmatically
+d.destroy()
+
+// Update dialog content dynamically
+d.content = 'New content'
+```
+
+#### DialogReactive Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| type | `'error' \| 'success' \| 'warning' \| 'info'` | Dialog type |
+| title | `string \| (() => VNodeChild)` | Title |
+| content | `string \| (() => VNodeChild)` | Content |
+| action | `() => VNodeChild` | Custom action area |
+| bordered | `boolean` | Show border |
+| closable | `boolean` | Show close button |
+| icon | `() => VNodeChild` | Custom icon |
+| loading | `boolean` | Positive button loading state |
+| negativeText | `string` | Cancel button text |
+| positiveText | `string` | Confirm button text |
+| showIcon | `boolean` | Show type icon |
+| onPositiveClick | `(e) => boolean \| Promise<boolean>` | Confirm handler; return false to prevent close |
+| onNegativeClick | `(e) => boolean \| Promise<boolean>` | Cancel handler |
+| onClose | `() => boolean \| Promise<boolean>` | Close (X) handler |
+| onMaskClick | `() => void` | Mask click handler |
+| onAfterEnter | `() => void` | After enter animation |
+| onAfterLeave | `() => void` | After leave animation |
+
+---
+
+### NMessage / useMessage
+
+Programmatic toast messages. Requires `NMessageProvider` ancestor.
+
+```
+import { NMessageProvider, useMessage } from 'naive-ui'
+```
+
+```vue
+<!-- App root -->
+<n-message-provider>
+  <app-content />
+</n-message-provider>
+```
+
+```js
+const message = useMessage()
+
+message.info('Info message')
+message.success('Operation successful')
+message.warning('This is a warning')
+message.error('An error occurred')
+message.loading('Loading...')
+
+// With options:
+const msg = message.info('Custom message', {
+  duration: 3000,          // ms (0 = persistent)
+  closable: true,
+  keepAliveOnHover: true,
+  onClose: () => console.log('closed'),
+  onAfterLeave: () => console.log('left')
+})
+msg.destroy() // Close programmatically
+```
+
+#### NMessageProvider Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| duration | `number` | `3000` | Default display duration (ms) |
+| max | `number` | `undefined` | Max simultaneous messages |
+| placement | `'top' \| 'top-left' \| 'top-right' \| 'bottom' \| 'bottom-left' \| 'bottom-right'` | `'top'` | Default placement |
+| closable | `boolean` | `false` | Default closable |
+| keep-alive-on-hover | `boolean` | `false` | Keep visible on hover |
+| to | `string \| HTMLElement` | `'body'` | Mount target |
+| container-class | `string` | `undefined` | Container class |
+| container-style | `string \| CSSProperties` | `undefined` | Container style |
+
+---
+
+### NNotification / useNotification
+
+More detailed user notifications. Requires `NNotificationProvider` ancestor.
+
+```
+import { NNotificationProvider, useNotification } from 'naive-ui'
+```
+
+```js
+const notification = useNotification()
+
+notification.info({
+  title: 'Title',
+  content: 'Notification content',
+  meta: 'Extra meta text',
+  avatar: () => h(NAvatar, ...),
+  action: () => h(NButton, ...),
+  duration: 3000,
+  closable: true,
+  onClose: () => {}
+})
+// Also: notification.success(), notification.warning(), notification.error()
+// notification.create() for fully custom
+```
+
+#### NNotificationProvider Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| placement | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom'` | `'top-right'` | Placement |
+| max | `number` | `undefined` | Max simultaneous notifications |
+| scrollable | `boolean` | `true` | Scrollable container |
+| to | `string \| HTMLElement` | `'body'` | Mount target |
+
+---
+
+### NLoadingBar / useLoadingBar
+
+Page-level loading bar (top of viewport). Requires `NLoadingBarProvider` ancestor.
+
+```
+import { NLoadingBarProvider, useLoadingBar } from 'naive-ui'
+```
+
+```js
+const loadingBar = useLoadingBar()
+loadingBar.start()   // Start loading animation
+loadingBar.finish()  // Finish (animate to 100%, then hide)
+loadingBar.error()   // Show error state (red)
+```
+
+#### NLoadingBarProvider Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| loading-bar-style | `CSSProperties` | `undefined` | Loading bar element style |
+| container-class | `string` | `undefined` | Container class |
+| container-style | `string \| CSSProperties` | `undefined` | Container style |
+| to | `string \| HTMLElement` | `'body'` | Mount target |
+| on-finish | `() => void` | `undefined` | Finish callback |
+| on-error | `() => void` | `undefined` | Error callback |
+
+---
+
+### NMenu
+
+```
+import { NMenu } from 'naive-ui'
+```
+
+#### Key Menu Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string \| number \| null` | `undefined` | Selected item key |
+| options | `MenuOption[]` | `[]` | Menu options |
+| mode | `'vertical' \| 'horizontal'` | `'vertical'` | Layout mode |
+| collapsed | `boolean` | `false` | Collapsed state (vertical only) |
+| collapsed-width | `number` | `48` | Width when collapsed |
+| collapsed-icon-size | `number` | `22` | Icon size when collapsed |
+| icon-size | `number` | `20` | Icon size |
+| indent | `number` | `32` | Sub-item indent |
+| root-indent | `number` | `undefined` | First-level indent |
+| default-value | `string \| number \| null` | `null` | Default selected key |
+| default-expanded-keys | `(string \| number)[]` | `[]` | Default expanded sub-menus |
+| expanded-keys | `(string \| number)[]` | `undefined` | Controlled expanded keys |
+| accordion | `boolean` | `false` | Only one submenu open at a time |
+| inverted | `boolean` | `false` | Inverted (dark) style |
+| responsive | `'self' \| 'screen'` | `'self'` | Responsive mode |
+| dropdown-props | `DropdownProps` | `undefined` | Collapsed sub-menu dropdown props |
+| render-icon | `(option: MenuOption) => VNodeChild` | `undefined` | Batch render icons |
+| render-label | `(option: MenuOption) => VNodeChild` | `undefined` | Batch render labels |
+| render-extra | `(option: MenuOption) => VNodeChild` | `undefined` | Batch render extra content |
+| expand-icon | `(option: MenuOption) => VNodeChild` | `undefined` | Custom expand icon |
+| node-props | `(option: MenuOption) => HTMLAttributes` | `undefined` | Node HTML attributes |
+| watch-props | `string[]` | `undefined` | Watch these props for reactive updates |
+| on-update:value | `(key, item) => void` | — | Item select handler |
+| on-update:expanded-keys | `(keys) => void` | — | Expand state change handler |
+
+#### MenuOption Shape
+
+```ts
+interface MenuOption {
+  label: string | (() => VNodeChild)
+  key: string | number
+  icon?: () => VNodeChild
+  disabled?: boolean
+  show?: boolean
+  extra?: string | (() => VNodeChild)
+  children?: MenuOption[]   // Sub-menu
+}
+interface MenuGroupOption {
+  type: 'group'
+  label: string | (() => VNodeChild)
+  key: string | number
+  children: MenuOption[]
+  show?: boolean
+}
+interface MenuDividerOption {
+  type: 'divider'
+  key?: string | number
+  props?: DividerProps
+  show?: boolean
+}
+```
+
+#### Menu Methods (via ref)
+
+| Method | Description |
+|--------|-------------|
+| showOption(key?) | Expand and scroll to option with given key |
+
+#### Routing with NMenu
+
+```vue
+<template>
+  <n-menu :options="menuOptions" :value="activeKey" />
+</template>
+<script setup>
+import { h, computed } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
+import { NMenu } from 'naive-ui'
+
+const route = useRoute()
+const activeKey = computed(() => route.name)
+
+const menuOptions = [
+  {
+    label: () => h(RouterLink, { to: { name: 'home' } }, { default: () => 'Home' }),
+    key: 'home'
+  },
+  {
+    label: () => h(RouterLink, { to: { name: 'about' } }, { default: () => 'About' }),
+    key: 'about'
+  }
+]
+</script>
+```
+
+---
+
+### NTabs & NTabPane
+
+```
+import { NTabs, NTabPane } from 'naive-ui'
+```
+
+#### Key Tabs Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string \| number` | `undefined` | Active tab key |
+| default-value | `string \| number` | `undefined` | Default active key |
+| type | `'bar' \| 'line' \| 'card' \| 'segment'` | `'bar'` | Tab style |
+| placement | `'top' \| 'right' \| 'bottom' \| 'left'` | `'top'` | Tab bar position |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Tab size |
+| closable | `boolean` | `false` | Show close button on tabs |
+| addable | `boolean` | `false` | Show add tab button |
+| justified | `boolean` | `false` | Equal-width tabs |
+| animated | `boolean` | `false` | Animated tab content transitions |
+| tab-style | `string \| CSSProperties` | `undefined` | Individual tab style |
+| tabs-padding | `number` | `0` | Padding inside tabs bar |
+| pane-class | `string` | `undefined` | Tab pane class |
+| pane-style | `string \| CSSProperties` | `undefined` | Tab pane style |
+| pane-wrapper-class | `string` | `undefined` | Pane wrapper class |
+| pane-wrapper-style | `string \| CSSProperties` | `undefined` | Pane wrapper style |
+| display-directive | `'if' \| 'show' \| 'show:lazy'` | `'if'` | Render strategy for inactive panes |
+| on-update:value | `(value) => void` | — | Tab change handler |
+| on-close | `(value) => void` | — | Tab close handler |
+| on-add | `() => void` | — | Add tab handler |
+| on-before-leave | `(tabName, oldTabName) => boolean \| Promise<boolean>` | `undefined` | Guard before tab leave |
+
+#### NTabPane Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| name | `string \| number` | required | Tab key |
+| tab | `string \| (() => VNodeChild)` | `undefined` | Tab label |
+| disabled | `boolean` | `false` | Disabled state |
+| closable | `boolean` | `undefined` | Override tabs closable |
+| display-directive | `'if' \| 'show' \| 'show:lazy'` | inherited | Override tabs display-directive |
+
+---
+
+### NLayout
+
+```
+import {
+  NLayout, NLayoutHeader, NLayoutContent,
+  NLayoutSider, NLayoutFooter
+} from 'naive-ui'
+```
+
+#### NLayout Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| position | `'static' \| 'absolute'` | `'static'` | Positioning mode |
+| has-sider | `boolean` | `false` | Layout contains a sider |
+| native-scrollbar | `boolean` | `true` | Use native scrollbar |
+| embedded | `boolean` | `false` | Darker embedded background |
+| content-style | `string \| CSSProperties` | `undefined` | Content wrapper style |
+
+#### NLayoutSider Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| collapsed (v-model) | `boolean` | `undefined` | Collapse state |
+| default-collapsed | `boolean` | `false` | Default collapse state |
+| collapse-mode | `'width' \| 'transform'` | `'width'` | How to collapse |
+| collapsed-width | `number` | `48` | Width when collapsed |
+| width | `number \| string` | `272` | Width when expanded |
+| show-trigger | `false \| 'bar' \| 'arrow-circle'` | `false` | Built-in toggle trigger |
+| bordered | `boolean` | `false` | Show border |
+| native-scrollbar | `boolean` | `true` | Use native scrollbar |
+| position | `'static' \| 'absolute'` | `'static'` | Positioning mode |
+| inverted | `boolean` | `false` | Inverted style |
+| on-update:collapsed | `(collapsed) => void` | — | Collapse state change |
+
+---
+
+### NGrid & NGridItem
+
+```
+import { NGrid, NGridItem, NGi } from 'naive-ui'
+// NGi is alias for NGridItem
+```
+
+#### NGrid Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| cols | `number \| ResponsiveDescription` | `24` | Number of columns |
+| x-gap | `number \| ResponsiveDescription` | `0` | Horizontal gap |
+| y-gap | `number \| ResponsiveDescription` | `0` | Vertical gap |
+| collapsed | `boolean` | `false` | Collapse to show only first row |
+| collapsed-rows | `number` | `1` | Rows visible when collapsed |
+| responsive | `'self' \| 'screen'` | `'screen'` | Responsive breakpoint source |
+| item-responsive | `boolean` | `false` | Item-level responsive |
+
+Responsive description format: `'1 640:2 1024:3'` (breakpoint:cols pairs)
+
+#### NGridItem / NGi Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| span | `number \| ResponsiveDescription` | `1` | Columns to span |
+| offset | `number \| ResponsiveDescription` | `0` | Columns to offset |
+| suffix | `boolean` | `false` | Render as suffix (for collapse button) |
+
+---
+
+### NSpace & NFlex
+
+```
+import { NSpace, NFlex } from 'naive-ui'
+```
+
+`NFlex` is the newer, recommended replacement for `NSpace`.
+
+#### NFlex / NSpace Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| align | `FlexAlignItems` | `'flex-start'` | Cross-axis alignment |
+| justify | `FlexJustifyContent` | `'flex-start'` | Main-axis justification |
+| inline | `boolean` | `false` | Inline display |
+| vertical | `boolean` | `false` | Vertical direction |
+| wrap | `boolean` | `true` | Allow wrapping |
+| size | `'small' \| 'medium' \| 'large' \| number \| [number, number]` | `'medium'` | Gap size |
+| gap | `string` | `undefined` | CSS gap (overrides size) |
+
+---
+
+### NPopover
+
+```
+import { NPopover } from 'naive-ui'
+```
+
+#### Key Popover Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| show (v-model) | `boolean` | `undefined` | Controlled visibility |
+| trigger | `'hover' \| 'click' \| 'focus' \| 'manual'` | `'hover'` | Trigger type |
+| placement | Placement | `'top'` | Popover position |
+| delay | `number` | `100` | Show delay (ms, hover trigger) |
+| duration | `number` | `100` | Hide delay (ms, hover trigger) |
+| disabled | `boolean` | `false` | Disable popover |
+| raw | `boolean` | `false` | No default padding/background (fully custom) |
+| scrollable | `boolean` | `false` | Make content scrollable |
+| show-arrow | `boolean` | `true` | Show arrow |
+| overlap | `boolean` | `false` | Overlap the trigger |
+| to | `string \| HTMLElement \| false` | `'body'` | Mount target |
+| z-index | `number` | `undefined` | CSS z-index |
+| display-directive | `'if' \| 'show'` | `'if'` | Render strategy |
+| content-class | `string` | `undefined` | Content area class |
+| content-style | `string \| CSSProperties` | `undefined` | Content area style |
+| arrow-class | `string` | `undefined` | Arrow class |
+| arrow-style | `string \| CSSProperties` | `undefined` | Arrow style |
+| keep-alive-on-hover | `boolean` | `true` | Keep open when hovering popover body |
+| on-update:show | `(show) => void` | — | Visibility change handler |
+| on-clickoutside | `(e: MouseEvent) => void` | — | Click outside handler |
+
+#### Placement Values
+
+```
+'top-start' | 'top' | 'top-end'
+'right-start' | 'right' | 'right-end'
+'bottom-start' | 'bottom' | 'bottom-end'
+'left-start' | 'left' | 'left-end'
+```
+
+#### Popover Slots
+
+| Name | Description |
+|------|-------------|
+| default | Trigger element |
+| trigger | Alternative trigger slot |
+| header | Optional header area |
+| footer | Optional footer area |
+
+---
+
+### NDropdown
+
+```
+import { NDropdown } from 'naive-ui'
+```
+
+#### Key Dropdown Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| options | `DropdownOption[]` | `[]` | Dropdown options |
+| trigger | `'hover' \| 'click' \| 'focus' \| 'manual'` | `'hover'` | Trigger type |
+| value | `string \| number \| null` | `undefined` | Highlighted option key |
+| show | `boolean` | `undefined` | Controlled visibility (manual trigger) |
+| placement | Placement | `'bottom'` | Dropdown position |
+| keyboard | `boolean` | `true` | Keyboard navigation |
+| inverted | `boolean` | `false` | Inverted style |
+| size | `'small' \| 'medium' \| 'large' \| 'huge'` | `'medium'` | Size |
+| render-label | `(option) => VNodeChild` | `undefined` | Custom label renderer |
+| render-icon | `(option) => VNodeChild` | `undefined` | Custom icon renderer |
+| node-props | `(option) => HTMLAttributes` | `undefined` | Node HTML attributes |
+| show-arrow | `boolean` | `false` | Show arrow |
+| on-select | `(key, option) => void` | — | Option select handler |
+| on-update:show | `(show) => void` | — | Visibility change handler |
+| on-clickoutside | `(e) => void` | — | Click outside handler |
+
+#### DropdownOption Shape
+
+```ts
+interface DropdownOption {
+  label: string | (() => VNodeChild)
+  key: string | number
+  icon?: () => VNodeChild
+  disabled?: boolean
+  show?: boolean
+  children?: DropdownOption[]
+  props?: HTMLAttributes
+}
+interface DropdownGroupOption {
+  type: 'group'
+  label: string | (() => VNodeChild)
+  key: string | number
+  children: DropdownOption[]
+  show?: boolean
+}
+interface DropdownDividerOption {
+  type: 'divider'
+  key?: string | number
+  props?: DividerProps
+  show?: boolean
+}
+```
+
+---
+
+### NDatePicker
+
+```
+import { NDatePicker } from 'naive-ui'
+```
+
+Requires `date-locale` set on `NConfigProvider` for locale-aware display.
+
+#### Key DatePicker Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `number \| [number, number] \| null` | `undefined` | Unix timestamp(s) |
+| default-value | `number \| [number, number] \| null` | `null` | Default value |
+| type | `'date' \| 'datetime' \| 'daterange' \| 'datetimerange' \| 'month' \| 'monthrange' \| 'year' \| 'yearrange' \| 'quarter' \| 'week'` | `'date'` | Picker type |
+| format | `string` | Type-dependent | Display format (date-fns format string) |
+| value-format | `string` | `undefined` | Value format; default is unix timestamp |
+| clearable | `boolean` | `false` | Clearable |
+| disabled | `boolean` | `false` | Disabled |
+| placeholder | `string` | `undefined` | Placeholder |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| status | `'success' \| 'warning' \| 'error'` | `undefined` | Validation status |
+| is-date-disabled | `(ts: number) => boolean` | `undefined` | Disable specific dates |
+| is-time-disabled | `(ts: number) => { isHourDisabled?, isMinuteDisabled?, isSecondDisabled? }` | `undefined` | Disable specific times |
+| shortcuts | `Record<string, number \| (() => number)>` | `undefined` | Preset date shortcuts |
+| time-picker-props | `TimePickerProps` | `undefined` | Time picker sub-component props |
+| panel | `boolean` | `false` | Render as inline panel |
+| first-day-of-week | `0-6` | `undefined` | First day of week (0=Sunday) |
+| to | `string \| HTMLElement \| false` | `'body'` | Mount target |
+| on-update:value | `(value) => void` | — | Value change handler |
+| on-confirm | `(value) => void` | — | Confirm button handler |
+| on-clear | `() => void` | — | Clear handler |
+
+---
+
+### NTree
+
+```
+import { NTree } from 'naive-ui'
+```
+
+#### Key Tree Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| data | `TreeOption[]` | `[]` | Tree data |
+| value (v-model:value) | `string \| number \| (string \| number)[]` | `undefined` | Checked keys |
+| selected-keys (v-model) | `(string \| number)[]` | `undefined` | Selected keys |
+| expanded-keys (v-model) | `(string \| number)[]` | `undefined` | Expanded keys |
+| default-selected-keys | `(string \| number)[]` | `[]` | Default selected |
+| default-expanded-keys | `(string \| number)[]` | `[]` | Default expanded |
+| checkable | `boolean` | `false` | Show checkboxes |
+| cascade | `boolean` | `false` | Cascade checking |
+| multiple | `boolean` | `false` | Multiple selection |
+| selectable | `boolean` | `true` | Allow selection |
+| filter | `(pattern, node) => boolean` | `undefined` | Filter function |
+| pattern | `string` | `''` | Filter pattern |
+| show-irrelevant-nodes | `boolean` | `true` | Show non-matching nodes when filtering |
+| virtual-scroll | `boolean` | `false` | Virtual scrolling |
+| block-node | `boolean` | `false` | Block-level nodes |
+| block-line | `boolean` | `false` | Full-width clickable line |
+| draggable | `boolean` | `false` | Enable drag and drop |
+| animated | `boolean` | `true` | Expand/collapse animation |
+| render-label | `(info: { option, checked, selected }) => VNodeChild` | `undefined` | Custom label renderer |
+| render-prefix | `(info: { option, checked, selected }) => VNodeChild` | `undefined` | Node prefix renderer |
+| render-suffix | `(info: { option, checked, selected }) => VNodeChild` | `undefined` | Node suffix renderer |
+| render-switcher-icon | `(expanded) => VNodeChild` | `undefined` | Custom expand icon |
+| label-field | `string` | `'label'` | Label field name |
+| key-field | `string` | `'key'` | Key field name |
+| children-field | `string` | `'children'` | Children field name |
+| leaf-only | `boolean` | `false` | Only check leaf nodes |
+| on-update:value | `(value, option) => void` | — | Check change handler |
+| on-update:selected-keys | `(keys, options) => void` | — | Selection change handler |
+| on-update:expanded-keys | `(keys, options) => void` | — | Expand change handler |
+| on-load | `(node) => Promise<void>` | `undefined` | Async node loader |
+| on-drop | `(info) => void` | — | Drag and drop handler |
+
+#### TreeOption Shape
+
+```ts
+interface TreeOption {
+  label: string
+  key: string | number
+  children?: TreeOption[]
+  disabled?: boolean
+  checkboxDisabled?: boolean
+  isLeaf?: boolean    // Required for async loading
+  prefix?: () => VNodeChild
+  suffix?: () => VNodeChild
+}
+```
+
+---
+
+### NCard
+
+```
+import { NCard } from 'naive-ui'
+```
+
+#### Key Card Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| title | `string` | `undefined` | Card title |
+| bordered | `boolean` | `true` | Show border |
+| hoverable | `boolean` | `false` | Hover lift effect |
+| closable | `boolean` | `false` | Show close button |
+| embedded | `boolean` | `false` | Embedded / sunken style |
+| content-class | `string` | `undefined` | Content area class |
+| content-style | `string \| CSSProperties` | `undefined` | Content area style |
+| header-class | `string` | `undefined` | Header class |
+| header-style | `string \| CSSProperties` | `undefined` | Header style |
+| header-extra-class | `string` | `undefined` | Header extra class |
+| footer-class | `string` | `undefined` | Footer class |
+| footer-style | `string \| CSSProperties` | `undefined` | Footer style |
+| segmented | `boolean \| { content?, footer? }` | `false` | Show dividers |
+| size | `'small' \| 'medium' \| 'large' \| 'huge'` | `'medium'` | Card size |
+| tag | `string` | `'div'` | Root element tag |
+| on-close | `() => void` | — | Close button handler |
+
+#### Card Slots
+
+| Name | Description |
+|------|-------------|
+| default | Card body content |
+| header | Card header |
+| header-extra | Right-aligned header content |
+| footer | Card footer |
+| action | Card action area |
+| cover | Cover image (above header) |
+
+---
+
+### NPagination
+
+```
+import { NPagination } from 'naive-ui'
+```
+
+#### Key Pagination Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| page (v-model) | `number` | `undefined` | Current page |
+| page-size (v-model) | `number` | `undefined` | Page size |
+| default-page | `number` | `1` | Default page (uncontrolled) |
+| default-page-size | `number` | `10` | Default page size (uncontrolled) |
+| item-count | `number` | `undefined` | Total item count |
+| page-count | `number` | `undefined` | Total page count (use instead of item-count for server-side) |
+| page-sizes | `number[]` | `[10]` | Page size options |
+| show-size-picker | `boolean` | `false` | Show page size dropdown |
+| show-quick-jumper | `boolean` | `false` | Show quick jump input |
+| simple | `boolean` | `false` | Simplified pagination UI |
+| prev-text | `string` | `undefined` | Previous button text |
+| next-text | `string` | `undefined` | Next button text |
+| disabled | `boolean` | `false` | Disabled state |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| prefix | `(info: { itemCount, startIndex, endIndex }) => VNodeChild` | `undefined` | Prefix slot render function |
+| suffix | Same | `undefined` | Suffix slot render function |
+| render-label | Custom | `undefined` | Custom page number renderer |
+| on-update:page | `(page: number) => void` | — | Page change handler |
+| on-update:page-size | `(size: number) => void` | — | Page size change handler |
+
+---
+
+### NProgress
+
+```
+import { NProgress } from 'naive-ui'
+```
+
+#### Key Progress Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| type | `'line' \| 'circle' \| 'multiple-circle'` | `'line'` | Progress type |
+| percentage | `number \| number[]` | `0` | Progress value(s) |
+| status | `'default' \| 'success' \| 'error' \| 'warning' \| 'info'` | `'default'` | Status |
+| indicator-placement | `'inside' \| 'outside' \| 'inside-start' \| 'inside-end' \| 'none'` | `'outside'` | Indicator placement |
+| processing | `boolean` | `false` | Show processing animation |
+| color | `string \| string[]` | `undefined` | Progress bar color(s) |
+| rail-color | `string \| string[]` | `undefined` | Track color(s) |
+| show-indicator | `boolean` | `true` | Show percentage indicator |
+| height | `number` | `undefined` | Bar height (line type) |
+| border-radius | `string \| number` | `undefined` | Border radius (line type) |
+| fill-border-radius | `string \| number` | `undefined` | Fill border radius (line type) |
+| gap-degree | `number` | `75` | Gap angle (circle type) |
+| gap-offset-degree | `number` | `18` | Gap position (circle type) |
+| stroke-width | `number` | `7` | Stroke width (circle type) |
+| circle-gap | `number` | `3` | Circle separation (multiple-circle type) |
+
+---
+
+### NAlert
+
+```
+import { NAlert } from 'naive-ui'
+```
+
+#### Key Alert Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| type | `'default' \| 'info' \| 'success' \| 'warning' \| 'error'` | `'default'` | Alert type |
+| title | `string` | `undefined` | Alert title |
+| closable | `boolean` | `false` | Show close button |
+| show-icon | `boolean` | `true` | Show type icon |
+| bordered | `boolean` | `true` | Show border |
+| on-close | `() => void` | — | Close handler |
+
+#### Alert Slots
+
+| Name | Description |
+|------|-------------|
+| default | Alert content |
+| header | Custom header |
+| icon | Custom icon |
+
+---
+
+### NPopconfirm
+
+```
+import { NPopconfirm } from 'naive-ui'
+```
+
+A popover with built-in confirm/cancel buttons.
+
+#### Key Popconfirm Props
+
+Inherits all Popover props, plus:
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| positive-text | `string` | `'Confirm'` | Confirm button text |
+| negative-text | `string` | `'Cancel'` | Cancel button text |
+| show-icon | `boolean` | `true` | Show warning icon |
+| on-positive-click | `(e: MouseEvent) => Promise<boolean> \| boolean` | — | Confirm handler; return false to prevent close |
+| on-negative-click | `(e: MouseEvent) => Promise<boolean> \| boolean` | — | Cancel handler |
+
+---
+
+### NDrawer & NDrawerContent
+
+```
+import { NDrawer, NDrawerContent } from 'naive-ui'
+```
+
+#### Key Drawer Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| show (v-model) | `boolean` | `false` | Visibility |
+| placement | `'top' \| 'right' \| 'bottom' \| 'left'` | `'right'` | Drawer position |
+| width | `number \| string` | `251` | Width (left/right placement) |
+| height | `number \| string` | `251` | Height (top/bottom placement) |
+| mask-closable | `boolean` | `true` | Click mask to close |
+| to | `string \| HTMLElement` | `'body'` | Mount target |
+| display-directive | `'if' \| 'show'` | `'if'` | Render strategy |
+| auto-focus | `boolean` | `true` | Auto focus on open |
+| trap-focus | `boolean` | `true` | Trap focus |
+| z-index | `number` | `undefined` | CSS z-index |
+| on-update:show | `(show: boolean) => void` | — | Visibility change |
+| on-after-enter | `() => void` | — | After open animation |
+| on-after-leave | `() => void` | — | After close animation |
+
+#### NDrawerContent Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| title | `string` | `undefined` | Drawer title |
+| closable | `boolean` | `false` | Show close button |
+| native-scrollbar | `boolean` | `true` | Use native scrollbar |
+| body-class | `string` | `undefined` | Body class |
+| body-style | `string \| CSSProperties` | `undefined` | Body style |
+| header-class | `string` | `undefined` | Header class |
+| header-style | `string \| CSSProperties` | `undefined` | Header style |
+| footer-class | `string` | `undefined` | Footer class |
+| footer-style | `string \| CSSProperties` | `undefined` | Footer style |
+
+#### DrawerContent Slots
+
+| Name | Description |
+|------|-------------|
+| default | Drawer body content |
+| header | Custom header |
+| footer | Drawer footer |
+
+---
+
+### NScrollbar
+
+```
+import { NScrollbar } from 'naive-ui'
+```
+
+Naive UI's custom scrollbar component with theme-aware styling.
+
+#### Key Scrollbar Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| trigger | `'none' \| 'hover'` | `'hover'` | When to show scrollbar |
+| x-scrollable | `boolean` | `false` | Enable horizontal scrolling |
+| content-class | `string` | `undefined` | Content wrapper class |
+| content-style | `string \| CSSProperties` | `undefined` | Content wrapper style |
+| size | `number` | `5` | Scrollbar track width |
+| on-scroll | `(e: Event) => void` | — | Scroll event handler |
+
+#### Scrollbar Methods (via ref)
+
+| Method | Description |
+|--------|-------------|
+| scrollTo(options) | Scroll to position (accepts ScrollToOptions or {left, top, behavior}) |
+| scrollBy(options) | Scroll by offset |
+
+---
+
+### NIcon
+
+```
+import { NIcon } from 'naive-ui'
+// Recommended: use xicons
+// npm i @vicons/ionicons5  (or @vicons/fluent, @vicons/carbon, @vicons/antd, etc.)
+import { HomeOutline } from '@vicons/ionicons5'
+```
+
+```vue
+<n-icon size="24" color="#333" :depth="3">
+  <HomeOutline />
+</n-icon>
+```
+
+#### NIcon Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| size | `number \| string` | `undefined` | Icon size |
+| color | `string` | `undefined` | Icon color |
+| depth | `1 \| 2 \| 3 \| 4 \| 5` | `undefined` | Depth-based color |
+| component | `Component` | `undefined` | Icon component (alternative to slot) |
+
+#### NIconWrapper Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| size | `number` | `undefined` | Wrapper size |
+| icon-size | `number` | `undefined` | Icon size inside wrapper |
+| border-radius | `number` | `undefined` | Wrapper border radius |
+| color | `string` | `undefined` | Background color |
+| icon-color | `string` | `undefined` | Icon color |
+
+---
+
+### NTag
+
+```
+import { NTag } from 'naive-ui'
+```
+
+#### Key Tag Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| type | `'default' \| 'primary' \| 'info' \| 'success' \| 'warning' \| 'error'` | `'default'` | Tag type |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| round | `boolean` | `false` | Rounded corners |
+| bordered | `boolean` | `true` | Show border |
+| closable | `boolean` | `false` | Show close button |
+| color | `{ color?, borderColor?, textColor? }` | `undefined` | Custom colors |
+| disabled | `boolean` | `false` | Disabled state |
+| checkable | `boolean` | `false` | Toggle-able tag |
+| checked (v-model) | `boolean` | `false` | Check state |
+| strong | `boolean` | `false` | Bold text |
+| trigger-click-on-close | `boolean` | `false` | Trigger click when close button clicked |
+| on-close | `(e: MouseEvent) => void` | — | Close handler |
+| on-update:checked | `(checked: boolean) => void` | — | Check state change handler |
+
+---
+
+### NBadge
+
+```
+import { NBadge } from 'naive-ui'
+```
+
+#### Key Badge Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value | `string \| number` | `undefined` | Badge content |
+| max | `number` | `undefined` | Max value (shows `{max}+`) |
+| dot | `boolean` | `false` | Show as dot |
+| type | `'default' \| 'info' \| 'success' \| 'warning' \| 'error'` | `'default'` | Type |
+| show | `boolean` | `true` | Visibility |
+| processing | `boolean` | `false` | Processing animation |
+| color | `string` | `undefined` | Custom badge color |
+| offset | `[number, number]` | `undefined` | Badge position offset [x, y] |
+
+---
+
+### NAvatar
+
+```
+import { NAvatar, NAvatarGroup } from 'naive-ui'
+```
+
+#### Key Avatar Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| src | `string` | `undefined` | Image URL |
+| size | `'small' \| 'medium' \| 'large' \| number` | `'medium'` | Avatar size |
+| round | `boolean` | `false` | Circular avatar |
+| bordered | `boolean` | `false` | Show border |
+| color | `string` | `undefined` | Background color (for icon/text) |
+| object-fit | `CSSProperties['objectFit']` | `'fill'` | Image object-fit |
+| fallback-src | `string` | `undefined` | Fallback image on error |
+| on-error | `(e: Event) => void` | — | Image error handler |
+| lazy | `boolean` | `false` | Lazy load image |
+| intersection-observer-options | `IntersectionObserverInit` | `undefined` | For lazy loading |
+
+---
+
+### NCheckbox & NCheckboxGroup
+
+```
+import { NCheckbox, NCheckboxGroup } from 'naive-ui'
+```
+
+#### NCheckbox Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| checked (v-model) | `boolean \| string \| number` | `undefined` | Check state |
+| default-checked | `boolean` | `false` | Default check state |
+| value | `string \| number` | `undefined` | Value (for use inside NCheckboxGroup) |
+| label | `string` | `undefined` | Label text |
+| disabled | `boolean` | `false` | Disabled |
+| indeterminate | `boolean` | `false` | Indeterminate state |
+| focusable | `boolean` | `true` | Focusable |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| on-update:checked | `(checked) => void` | — | Change handler |
+
+#### NCheckboxGroup Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `Array<string \| number>` | `undefined` | Checked values |
+| default-value | `Array<string \| number>` | `[]` | Default checked values |
+| disabled | `boolean` | `false` | Disable all children |
+| min | `number` | `undefined` | Minimum required checks |
+| max | `number` | `undefined` | Maximum allowed checks |
+| on-update:value | `(value) => void` | — | Change handler |
+
+---
+
+### NRadio & NRadioGroup
+
+```
+import { NRadio, NRadioGroup, NRadioButton } from 'naive-ui'
+```
+
+#### NRadioGroup Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string \| number \| null` | `undefined` | Selected value |
+| default-value | `string \| number \| null` | `null` | Default value |
+| disabled | `boolean` | `false` | Disable all radios |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size (for NRadioButton) |
+| name | `string` | `undefined` | HTML name attribute |
+| on-update:value | `(value) => void` | — | Change handler |
+
+#### NRadio Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value | `string \| number` | `undefined` | Radio value |
+| label | `string` | `undefined` | Label text |
+| checked | `boolean` | `undefined` | Controlled check state |
+| default-checked | `boolean` | `false` | Default check state |
+| disabled | `boolean` | `false` | Disabled |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| focusable | `boolean` | `true` | Focusable |
+
+---
+
+### NSwitch
+
+```
+import { NSwitch } from 'naive-ui'
+```
+
+#### Key Switch Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `boolean \| string \| number` | `undefined` | Switch state |
+| default-value | `boolean` | `false` | Default state |
+| checked-value | `boolean \| string \| number` | `true` | Value when checked |
+| unchecked-value | `boolean \| string \| number` | `false` | Value when unchecked |
+| disabled | `boolean` | `false` | Disabled |
+| loading | `boolean` | `false` | Loading state |
+| round | `boolean` | `true` | Rounded style |
+| rubberband | `boolean` | `true` | Rubber band animation |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| on-update:value | `(value) => void` | — | Change handler |
+
+#### Switch Slots
+
+| Name | Description |
+|------|-------------|
+| checked | Content inside switch when checked |
+| unchecked | Content inside switch when unchecked |
+| checked-icon | Icon when checked |
+| unchecked-icon | Icon when unchecked |
+
+---
+
+### NSlider
+
+```
+import { NSlider } from 'naive-ui'
+```
+
+#### Key Slider Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `number \| [number, number]` | `undefined` | Slider value |
+| default-value | `number \| [number, number]` | `0` | Default value |
+| min | `number` | `0` | Minimum value |
+| max | `number` | `100` | Maximum value |
+| step | `number \| 'mark'` | `1` | Step size; 'mark' snaps to marks |
+| range | `boolean` | `false` | Range slider (two handles) |
+| disabled | `boolean` | `false` | Disabled |
+| vertical | `boolean` | `false` | Vertical orientation |
+| reverse | `boolean` | `false` | Reverse direction |
+| marks | `Record<number, string>` | `undefined` | Step marks |
+| show-tooltip | `boolean` | `true` | Show value tooltip on hover/drag |
+| format-tooltip | `(value: number) => string` | `undefined` | Custom tooltip content |
+| tooltip | `boolean` | `true` | Enable tooltip |
+| keyboard | `boolean` | `true` | Keyboard input |
+| on-update:value | `(value) => void` | — | Value change handler |
+
+---
+
+### NInputNumber
+
+```
+import { NInputNumber } from 'naive-ui'
+```
+
+#### Key InputNumber Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `number \| null` | `undefined` | Number value |
+| default-value | `number \| null` | `null` | Default value |
+| min | `number` | `undefined` | Minimum value |
+| max | `number` | `undefined` | Maximum value |
+| step | `number` | `1` | Increment step |
+| precision | `number` | `undefined` | Decimal precision |
+| disabled | `boolean` | `false` | Disabled |
+| readonly | `boolean` | `false` | Read-only |
+| clearable | `boolean` | `false` | Clearable |
+| show-button | `boolean` | `true` | Show +/- buttons |
+| button-placement | `'both' \| 'right'` | `'right'` | Button position |
+| placeholder | `string` | `'Please Input'` | Placeholder |
+| size | `'tiny' \| 'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| status | `'success' \| 'warning' \| 'error'` | `undefined` | Validation status |
+| validator | `(value: number) => boolean` | `undefined` | Custom validator |
+| parse | `(input: string) => number \| null` | `undefined` | Custom parser |
+| format | `(value: number \| null) => string` | `undefined` | Custom formatter |
+| keyboard | `{ ArrowUp?, ArrowDown? }` | `undefined` | Keyboard shortcuts config |
+| on-update:value | `(value) => void` | — | Value change handler |
+| on-blur | `(e: FocusEvent) => void` | — | Blur handler |
+| on-focus | `(e: FocusEvent) => void` | — | Focus handler |
+
+---
+
+### NAutoComplete
+
+```
+import { NAutoComplete } from 'naive-ui'
+```
+
+#### Key AutoComplete Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string \| null` | `undefined` | Input value |
+| options | `Array<string \| AutoCompleteOption \| AutoCompleteGroupOption>` | `[]` | Options |
+| default-value | `string \| null` | `null` | Default value |
+| placeholder | `string` | `undefined` | Placeholder |
+| disabled | `boolean` | `false` | Disabled |
+| clearable | `boolean` | `false` | Clearable |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| status | `'success' \| 'warning' \| 'error'` | `undefined` | Status |
+| blur-after-select | `boolean` | `false` | Blur after selecting option |
+| get-show | `(value: string) => boolean` | `undefined` | Control when to show options |
+| input-props | `HTMLInputAttributes` | `undefined` | Native input props |
+| render-label | `(option) => VNodeChild` | `undefined` | Custom option renderer |
+| on-update:value | `(value) => void` | — | Value change handler |
+| on-select | `(value: string) => void` | — | Option select handler |
+| on-blur | `(e: FocusEvent) => void` | — | Blur handler |
+| on-focus | `(e: FocusEvent) => void` | — | Focus handler |
+
+---
+
+### NUpload
+
+```
+import { NUpload, NUploadDragger } from 'naive-ui'
+```
+
+#### Key Upload Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| action | `string` | `undefined` | Upload URL |
+| file-list (v-model) | `UploadFileInfo[]` | `undefined` | File list (controlled) |
+| default-file-list | `UploadFileInfo[]` | `[]` | Default file list |
+| accept | `string` | `undefined` | Accepted file types (MIME or extension) |
+| multiple | `boolean` | `false` | Allow multiple files |
+| directory | `boolean` | `false` | Allow directory upload |
+| max | `number` | `undefined` | Max number of files |
+| show-file-list | `boolean` | `true` | Show file list |
+| show-preview-button | `boolean` | `true` | Show image preview button |
+| show-remove-button | `boolean` | `true` | Show remove button |
+| show-retry-button | `boolean` | `true` | Show retry button |
+| show-download-button | `boolean` | `false` | Show download button |
+| disabled | `boolean` | `false` | Disabled |
+| with-credentials | `boolean` | `false` | Send cookies with request |
+| headers | `HeadersInit` | `undefined` | Custom request headers |
+| data | `Record<string, any>` | `undefined` | Extra POST data |
+| list-type | `'text' \| 'image' \| 'image-card'` | `'text'` | File list display type |
+| trigger-style | `string \| CSSProperties` | `undefined` | Trigger area style |
+| custom-request | `(options: UploadCustomRequestOptions) => void` | `undefined` | Custom upload handler |
+| on-update:file-list | `(fileList: UploadFileInfo[]) => void` | — | File list change handler |
+| on-before-upload | `(data: { file, fileList }) => boolean \| Promise<boolean>` | — | Upload guard |
+| on-finish | `(data: { file, event }) => UploadFileInfo \| void` | — | Upload complete handler |
+| on-error | `(data: { file, event }) => UploadFileInfo \| void` | — | Upload error handler |
+| on-change | `(data: { file, fileList, event }) => void` | — | Any change handler |
+| on-remove | `(data: { file, fileList }) => boolean \| Promise<boolean>` | — | Remove guard |
+| on-preview | `(file: UploadFileInfo) => void` | — | Preview handler |
+
+#### UploadFileInfo Shape
+
+```ts
+interface UploadFileInfo {
+  id: string
+  name: string
+  status: 'pending' | 'uploading' | 'finished' | 'removed' | 'error'
+  percentage?: number
+  url?: string | null
+  file?: File | null
+  thumbnailUrl?: string | null
+  type?: string | null
+  fullPath?: string | null
+}
+```
+
+---
+
+### NTypography
+
+```
+import {
+  NText, NP, NA, NH1, NH2, NH3, NH4, NH5, NH6,
+  NUl, NOl, NLi, NBlockquote, NHr, NCode
+} from 'naive-ui'
+```
+
+#### NText Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| depth | `1 \| 2 \| 3` | `undefined` | Color depth |
+| type | `'default' \| 'info' \| 'success' \| 'warning' \| 'error'` | `'default'` | Text type |
+| code | `boolean` | `false` | Code style |
+| delete | `boolean` | `false` | Strikethrough |
+| strong | `boolean` | `false` | Bold |
+| italic | `boolean` | `false` | Italic |
+| underline | `boolean` | `false` | Underline |
+| tag | `string` | `'span'` | HTML tag |
+
+#### NH1–NH6 Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| prefix | `'bar'` | `undefined` | Show colored left bar |
+| align-text | `boolean` | `false` | Align with text baseline |
+| type | `'default' \| 'info' \| 'success' \| 'warning' \| 'error'` | `'default'` | Heading color |
+
+---
+
+### NDescriptions & NDescriptionsItem
+
+```
+import { NDescriptions, NDescriptionsItem } from 'naive-ui'
+```
+
+#### NDescriptions Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| title | `string` | `undefined` | Section title |
+| column | `number` | `3` | Columns per row |
+| columns | `number` | Same as column | Alias |
+| label-align | `'left' \| 'right' \| 'center'` | `'left'` | Label alignment |
+| label-placement | `'left' \| 'top'` | `'top'` | Label position |
+| bordered | `boolean` | `false` | Show borders |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| separator | `string` | `':'` | Label-value separator |
+| content-class | `string` | `undefined` | Content class |
+| label-class | `string` | `undefined` | Label class |
+
+#### NDescriptionsItem Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| label | `string` | `undefined` | Item label |
+| span | `number` | `1` | Column span |
+| label-align | Overrides parent | — | Label alignment |
+| label-placement | Overrides parent | — | Label placement |
+| label-class | `string` | `undefined` | Label class |
+| label-style | `string \| CSSProperties` | `undefined` | Label style |
+| content-class | `string` | `undefined` | Content class |
+| content-style | `string \| CSSProperties` | `undefined` | Content style |
+
+---
+
+### NTimeline & NTimelineItem
+
+```
+import { NTimeline, NTimelineItem } from 'naive-ui'
+```
+
+#### NTimeline Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| horizontal | `boolean` | `false` | Horizontal layout |
+| icon-size | `number` | `undefined` | Icon size |
+| item-placement | `'left' \| 'right'` | `'right'` | Content placement (vertical) |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+
+#### NTimelineItem Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| type | `'default' \| 'info' \| 'success' \| 'warning' \| 'error'` | `'default'` | Item type |
+| title | `string` | `undefined` | Item title |
+| content | `string` | `undefined` | Item content |
+| time | `string` | `undefined` | Timestamp text |
+| line-type | `'default' \| 'dashed'` | `'default'` | Connector line style |
+| color | `string` | `undefined` | Custom circle color |
+
+---
+
+### NWatermark
+
+```
+import { NWatermark } from 'naive-ui'
+```
+
+#### Key Watermark Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| content | `string \| string[]` | `undefined` | Watermark text |
+| cross | `boolean` | `false` | Render in cross pattern |
+| fullscreen | `boolean` | `false` | Full-screen watermark |
+| width | `number` | `32` | Watermark width |
+| height | `number` | `32` | Watermark height |
+| x-offset | `number` | `0` | Horizontal offset |
+| y-offset | `number` | `0` | Vertical offset |
+| rotate | `number` | `-22` | Rotation angle (degrees) |
+| font-size | `number` | `14` | Font size |
+| font-color | `string` | `'rgba(128,128,128,.3)'` | Font color |
+| line-height | `number` | `undefined` | Line height |
+| font-style | `CSSProperties['fontStyle']` | `'normal'` | Font style |
+| font-variant | `CSSProperties['fontVariant']` | `'normal'` | Font variant |
+| font-weight | `string \| number` | `'normal'` | Font weight |
+| font-family | `string` | `undefined` | Font family |
+| text-align | `CanvasTextAlign` | `'center'` | Text alignment |
+| global-rotate | `number` | `0` | Global rotation |
+| z-index | `number` | `10` | CSS z-index |
+| image | `string` | `undefined` | Image URL (replaces text) |
+| image-width | `number` | `undefined` | Image width |
+| image-height | `number` | `undefined` | Image height |
+| gap-x | `number` | `212` | Horizontal gap between tiles |
+| gap-y | `number` | `222` | Vertical gap between tiles |
+
+---
+
+### NImage & NImageGroup
+
+```
+import { NImage, NImageGroup } from 'naive-ui'
+```
+
+#### Key Image Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| src | `string` | `undefined` | Image URL |
+| width | `string \| number` | `undefined` | Image width |
+| height | `string \| number` | `undefined` | Image height |
+| object-fit | `CSSProperties['objectFit']` | `'fill'` | Object-fit |
+| alt | `string` | `undefined` | Alt text |
+| preview-disabled | `boolean` | `false` | Disable click-to-preview |
+| preview-src | `string` | `undefined` | Separate preview image |
+| show-toolbar | `boolean` | `true` | Show preview toolbar |
+| show-toolbar-tooltip | `boolean` | `false` | Show toolbar button tooltips |
+| fallback-src | `string` | `undefined` | Fallback image URL |
+| lazy | `boolean` | `false` | Lazy loading |
+| intersection-observer-options | `IntersectionObserverInit` | `undefined` | Lazy load config |
+| on-load | `(e: Event) => void` | — | Load handler |
+| on-error | `(e: Event) => void` | — | Error handler |
+| on-preview-next | `() => void` | — | Next preview handler |
+| on-preview-prev | `() => void` | — | Previous preview handler |
+
+---
+
+### NRate
+
+```
+import { NRate } from 'naive-ui'
+```
+
+#### Key Rate Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `number \| null` | `undefined` | Rating value |
+| default-value | `number \| null` | `null` | Default value |
+| count | `number` | `5` | Number of stars |
+| allow-half | `boolean` | `false` | Allow half ratings |
+| clearable | `boolean` | `false` | Clearable (click selected to unset) |
+| disabled | `boolean` | `false` | Disabled |
+| readonly | `boolean` | `false` | Read-only |
+| color | `string` | `undefined` | Active star color |
+| size | `'small' \| 'medium' \| 'large' \| number` | `'medium'` | Star size |
+| on-update:value | `(value: number \| null) => void` | — | Change handler |
+
+---
+
+### NCascader
+
+```
+import { NCascader } from 'naive-ui'
+```
+
+#### Key Cascader Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string \| number \| Array \| null` | `undefined` | Selected value(s) |
+| options | `CascaderOption[]` | `[]` | Options |
+| multiple | `boolean` | `false` | Multiple selection |
+| filterable | `boolean` | `false` | Filter/search |
+| clearable | `boolean` | `false` | Clearable |
+| disabled | `boolean` | `false` | Disabled |
+| placeholder | `string` | `'Please Select'` | Placeholder |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| status | `'success' \| 'warning' \| 'error'` | `undefined` | Status |
+| expand-trigger | `'click' \| 'hover'` | `'click'` | Panel expand trigger |
+| cascade | `boolean` | `true` | Cascade check in multiple mode |
+| check-strategy | `'all' \| 'parent' \| 'child'` | `'all'` | Check strategy for value |
+| remote | `boolean` | `false` | Async loading mode |
+| on-load | `(option) => Promise<void>` | `undefined` | Async node loader |
+| label-field | `string` | `'label'` | Label field name |
+| value-field | `string` | `'value'` | Value field name |
+| children-field | `string` | `'children'` | Children field name |
+| show-path | `boolean` | `true` | Show full path in selection |
+| separator | `string` | `' / '` | Path separator |
+| on-update:value | `(value) => void` | — | Value change handler |
+
+---
+
+### NColorPicker
+
+```
+import { NColorPicker } from 'naive-ui'
+```
+
+#### Key ColorPicker Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string` | `undefined` | Color value |
+| default-value | `string` | `'#000000'` | Default value |
+| modes | `Array<'rgb' \| 'hex' \| 'hsl' \| 'hsv'>` | `['rgb','hex','hsl','hsv']` | Color modes |
+| show-alpha | `boolean` | `true` | Show alpha channel |
+| show-preview | `boolean` | `false` | Show color preview swatch |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| disabled | `boolean` | `false` | Disabled |
+| swatches | `string[]` | `undefined` | Preset color swatches |
+| on-update:value | `(value: string) => void` | — | Value change handler |
+| on-confirm | `(value: string) => void` | — | Confirm button handler |
+
+---
+
+### NTimePicker
+
+```
+import { NTimePicker } from 'naive-ui'
+```
+
+#### Key TimePicker Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `number \| null` | `undefined` | Unix timestamp (time part) |
+| default-value | `number \| null` | `null` | Default value |
+| format | `string` | `'HH:mm:ss'` | Display format (date-fns) |
+| use12-hours | `boolean` | `false` | 12-hour format |
+| clearable | `boolean` | `false` | Clearable |
+| disabled | `boolean` | `false` | Disabled |
+| placeholder | `string` | `'Select Time'` | Placeholder |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| status | `'success' \| 'warning' \| 'error'` | `undefined` | Status |
+| hours | `number \| number[]` | `undefined` | Available hours |
+| minutes | `number \| number[]` | `undefined` | Available minutes |
+| seconds | `number \| number[]` | `undefined` | Available seconds |
+| is-hour-disabled | `(hour: number) => boolean` | `undefined` | Disable specific hours |
+| is-minute-disabled | `(minute: number, hour: number) => boolean` | `undefined` | Disable minutes |
+| is-second-disabled | `(second: number, minute: number, hour: number) => boolean` | `undefined` | Disable seconds |
+| on-update:value | `(value) => void` | — | Value change handler |
+
+---
+
+### NTransfer
+
+```
+import { NTransfer } from 'naive-ui'
+```
+
+#### Key Transfer Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `(string \| number)[]` | `undefined` | Selected values |
+| default-value | `(string \| number)[]` | `[]` | Default selected |
+| options | `TransferOption[]` | `[]` | All available options |
+| disabled | `boolean` | `false` | Disabled |
+| filterable | `boolean` | `false` | Show filter inputs |
+| source-filterable | `boolean` | inherited | Filter for source panel |
+| target-filterable | `boolean` | inherited | Filter for target panel |
+| size | `'small' \| 'medium' \| 'large'` | `'medium'` | Size |
+| source-title | `string` | `'Source'` | Source panel title |
+| target-title | `string` | `'Target'` | Target panel title |
+| render-source-label | `(option) => VNodeChild` | `undefined` | Custom source label |
+| render-target-label | `(option) => VNodeChild` | `undefined` | Custom target label |
+| render-source-list | `(body) => VNodeChild` | `undefined` | Fully custom source list |
+| render-target-list | `(body) => VNodeChild` | `undefined` | Fully custom target list |
+| on-update:value | `(value, options) => void` | — | Value change handler |
+
+---
+
+### NMention
+
+```
+import { NMention } from 'naive-ui'
+```
+
+#### Key Mention Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `string` | `undefined` | Input value |
+| default-value | `string` | `''` | Default value |
+| options | `MentionOption[]` | `[]` | Mention options |
+| prefix | `string \| string[]` | `'@'` | Trigger prefix character(s) |
+| type | `'text' \| 'textarea'` | `'text'` | Input type |
+| filterable | `boolean` | `true` | Filter options |
+| placeholder | `string` | `undefined` | Placeholder |
+| disabled | `boolean` | `false` | Disabled |
+| loading | `boolean` | `false` | Loading state |
+| on-update:value | `(value: string) => void` | — | Value change handler |
+| on-search | `(pattern: string, prefix: string) => void` | — | Search handler for remote options |
+| on-select | `(option, prefix) => void` | — | Option select handler |
+
+---
+
+### NDynamicInput & NDynamicTags
+
+```
+import { NDynamicInput, NDynamicTags } from 'naive-ui'
+```
+
+#### Key NDynamicInput Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `any[]` | `undefined` | Array value |
+| default-value | `any[]` | `[]` | Default value |
+| min | `number` | `0` | Minimum items |
+| max | `number` | `undefined` | Maximum items |
+| disabled | `boolean` | `false` | Disabled |
+| show-sort-button | `boolean` | `false` | Show sort buttons |
+| preset | `'input' \| 'pair'` | `'input'` | Built-in preset |
+| create-button-props | `ButtonProps` | `undefined` | Add button props |
+| on-create | `(index: number) => any` | `undefined` | Custom item factory |
+| on-update:value | `(value) => void` | — | Value change handler |
+
+Default slot receives `{ value, index }` for custom item rendering.
+
+---
+
+### NSteps & NStep
+
+```
+import { NSteps, NStep } from 'naive-ui'
+```
+
+#### NSteps Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| current (v-model) | `number` | `undefined` | Current step (1-indexed) |
+| status | `'process' \| 'finish' \| 'error' \| 'wait'` | `'process'` | Current step status |
+| size | `'small' \| 'medium'` | `'medium'` | Size |
+| vertical | `boolean` | `false` | Vertical layout |
+
+#### NStep Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| title | `string` | `undefined` | Step title |
+| description | `string` | `undefined` | Step description |
+| status | Overrides parent | — | Step-specific status |
+| disabled | `boolean` | `false` | Disabled |
+
+---
+
+### NBreadcrumb & NBreadcrumbItem
+
+```
+import { NBreadcrumb, NBreadcrumbItem } from 'naive-ui'
+```
+
+#### NBreadcrumb Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| separator | `string \| (() => VNodeChild)` | `'/'` | Separator character |
+
+#### NBreadcrumbItem Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| href | `string` | `undefined` | Link URL |
+| clickable | `boolean` | `true` | Clickable style |
+| separator | Overrides parent | — | Item separator |
+
+---
+
+### NAnchor & NAnchorLink
+
+```
+import { NAnchor, NAnchorLink } from 'naive-ui'
+```
+
+#### NAnchor Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| show-rail | `boolean` | `true` | Show left rail indicator |
+| show-background | `boolean` | `false` | Show background on active link |
+| type | `'rail' \| 'block'` | `'rail'` | Layout type |
+| offset-target | `number \| (() => HTMLElement)` | `undefined` | Scroll container |
+| bound | `number` | `12` | Activation distance boundary |
+| ignore-gap | `boolean` | `false` | Ignore gap between headings |
+| listen-to | `string \| HTMLElement \| (() => HTMLElement)` | `undefined` | Scroll listener target |
+| on-update:value | `(href: string) => void` | — | Active anchor change handler |
+
+---
+
+### NAffix
+
+```
+import { NAffix } from 'naive-ui'
+```
+
+#### NAffix Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| position | `'fixed' \| 'absolute'` | `'fixed'` | Positioning strategy |
+| trigger-top | `number` | `undefined` | Distance from top to trigger sticking |
+| trigger-bottom | `number` | `undefined` | Distance from bottom to trigger sticking |
+| top | `number` | `undefined` | Stuck position from top |
+| bottom | `number` | `undefined` | Stuck position from bottom |
+| listen-to | `string \| HTMLElement \| (() => HTMLElement)` | Document | Scroll listener |
+| z-index | `number` | `undefined` | CSS z-index |
+| on-change | `(affixed: boolean) => void` | — | Stuck state change handler |
+
+---
+
+### NBackTop
+
+```
+import { NBackTop } from 'naive-ui'
+```
+
+#### NBackTop Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| right | `number \| string` | `40` | Right offset |
+| bottom | `number \| string` | `40` | Bottom offset |
+| visibility-height | `number` | `180` | Scroll height to show button |
+| listen-to | `string \| HTMLElement \| (() => HTMLElement)` | Document | Scroll listener |
+| to | `string \| HTMLElement` | `'body'` | Mount target |
+| duration | `number` | `450` | Scroll duration (ms) |
+| z-index | `number` | `undefined` | CSS z-index |
+| show | `boolean` | `undefined` | Controlled visibility |
+| on-click | `() => void` | — | Click handler |
+
+---
+
+### NPageHeader
+
+```
+import { NPageHeader } from 'naive-ui'
+```
+
+#### NPageHeader Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| title | `string` | `undefined` | Page title |
+| subtitle | `string` | `undefined` | Page subtitle |
+| back | `() => void` | `undefined` | Back button handler; omit to hide back button |
+| on-back | `() => void` | — | Alias for back prop |
+
+#### PageHeader Slots
+
+| Name | Description |
+|------|-------------|
+| title | Custom title |
+| subtitle | Custom subtitle |
+| avatar | Avatar left of title |
+| back | Custom back button |
+| header | Right-aligned header |
+| extra | Extra actions (right side) |
+| default | Page body |
+| footer | Page footer |
+
+---
+
+### NCalendar
+
+```
+import { NCalendar } from 'naive-ui'
+```
+
+#### Key Calendar Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| value (v-model) | `number` | `undefined` | Displayed date (unix timestamp) |
+| default-value | `number` | Current date | Default date |
+| is-date-disabled | `(ts: number) => boolean` | `undefined` | Disable specific dates |
+| on-update:value | `(ts: number) => void` | — | Date select handler |
+| on-panel-change | `(data: { year, month }) => void` | — | Panel navigation handler |
+
+#### Calendar Slots
+
+| Name | Parameters | Description |
+|------|------------|-------------|
+| default | `{ year, month, date }` | Custom cell content |
+
+---
+
+### NResult
+
+```
+import { NResult } from 'naive-ui'
+```
+
+#### NResult Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| status | `'404' \| '403' \| '500' \| 'info' \| 'success' \| 'warning' \| 'error'` | `'info'` | Result type |
+| title | `string` | `undefined` | Title text |
+| description | `string` | `undefined` | Description text |
+| size | `'small' \| 'medium' \| 'large' \| 'huge'` | `'medium'` | Size |
+| icon | Slot | — | Custom icon |
+| footer | Slot | — | Footer actions |
+| default | Slot | — | Body content |
+
+---
+
+### NSpin
+
+```
+import { NSpin } from 'naive-ui'
+```
+
+#### NSpin Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| show | `boolean` | `true` | Show spinner |
+| size | `'small' \| 'medium' \| 'large' \| number` | `'medium'` | Spinner size |
+| stroke | `string` | `undefined` | Spinner stroke color |
+| stroke-width | `number` | `undefined` | Stroke width |
+| rotate | `boolean` | `true` | Rotation animation |
+| description | `string` | `undefined` | Loading description |
+| content-class | `string` | `undefined` | Wrapped content class |
+| content-style | `string \| CSSProperties` | `undefined` | Wrapped content style |
+
+When content is wrapped in default slot, spinner overlays the content.
+
+---
+
+### NEmpty
+
+```
+import { NEmpty } from 'naive-ui'
+```
+
+#### NEmpty Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| description | `string` | `'No Data'` | Description text |
+| show-description | `boolean` | `true` | Show description |
+| show-icon | `boolean` | `true` | Show empty icon |
+| size | `'small' \| 'medium' \| 'large' \| 'huge'` | `'medium'` | Size |
+| icon | Slot | — | Custom icon |
+| default | Slot | — | Extra content (actions etc.) |
+| extra | Slot | — | Extra content area |
+
+---
+
+### NCode
+
+```
+import { NCode } from 'naive-ui'
+```
+
+Renders highlighted code blocks using highlight.js.
+
+#### NCode Props
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| code | `string` | `''` | Source code string |
+| language | `string` | `undefined` | Language for syntax highlighting |
+| trim | `boolean` | `true` | Trim leading/trailing whitespace |
+| hljs | `hljs instance` | `undefined` | Custom highlight.js instance |
+| uri | `boolean` | `false` | Render as URI with links |
+| show-line-numbers | `boolean` | `false` | Show line numbers |
+| word-wrap | `boolean` | `false` | Word wrap |
+| inline | `boolean` | `false` | Inline code (no block layout) |
+
+---
+
+## COMPOSABLES (PROGRAMMATIC APIs)
+
+All provider-based composables must be called inside a component that is a descendant of the corresponding Provider:
+
+| Composable | Required Provider | Usage |
+|-----------|-----------------|-------|
+| `useMessage()` | `NMessageProvider` | Show toast messages |
+| `useDialog()` | `NDialogProvider` | Show confirm/alert dialogs |
+| `useNotification()` | `NNotificationProvider` | Show notification alerts |
+| `useLoadingBar()` | `NLoadingBarProvider` | Control top loading bar |
+| `useThemeVars()` | `NConfigProvider` | Read current theme variables |
+| `useOsTheme()` | None | Detect OS light/dark preference |
+
+### Setting Up All Providers
+
+```vue
+<!-- App.vue -->
+<template>
+  <n-config-provider :theme="theme" :locale="locale" :date-locale="dateLocale">
+    <n-loading-bar-provider>
+      <n-dialog-provider>
+        <n-notification-provider>
+          <n-message-provider>
+            <router-view />
+            <n-global-style />
+          </n-message-provider>
+        </n-notification-provider>
+      </n-dialog-provider>
+    </n-loading-bar-provider>
+  </n-config-provider>
+</template>
+```
+
+---
+
+## KNOWN COMMON ISSUES
+
+### useMessage / useDialog / useNotification returns undefined
+
+These composables only work inside components that are **descendants** of their respective Provider. They cannot be called at the app root level or outside Vue's component tree.
+
+**Solution**: Wrap `<router-view />` (or `<app />`) with the relevant providers, not the other way around.
+
+### Components Appear Without Styles
+
+This usually happens when:
+1. Using SSR without proper css-render setup
+2. Using `app.use(naive)` with a very old bundler — no CSS is emitted, which is intentional. Styles are injected at runtime.
+
+### Virtual Scroll / Large Data
+
+For `NDataTable`, `NTree`, `NSelect`, `NCascader`, `NTransfer` — virtual scrolling is available but usually must be opted into via `virtual-scroll` prop. `max-height` is required for `NDataTable` virtual scroll.
+
+### NDataTable Remote Mode
+
+Set `remote: true` when handling pagination, filtering, and sorting server-side. You must manually update `data` in response to `on-update:page`, `on-update:filters`, and `on-update:sorter` events.
+
+### Form Validation with Number Types
+
+When validating number fields with `required`, add `type: 'number'` to the rule:
+
+```js
+const rules = {
+  age: { type: 'number', required: true, message: 'Required', trigger: 'blur' }
+}
+```
+
+### Multiple Providers for Different Subtrees
+
+You can nest `NConfigProvider` to scope themes:
+
+```vue
+<n-config-provider :theme="null">          <!-- Light for most of app -->
+  <main-content />
+  <n-config-provider :theme="darkTheme">   <!-- Dark sidebar only -->
+    <sidebar />
+  </n-config-provider>
+</n-config-provider>
+```
+
+---
+
+## DEPENDENCY INFORMATION
+
+Naive UI's key internal dependencies (automatically installed with `naive-ui`):
+
+| Package | Purpose |
+|---------|---------|
+| `async-validator` | Form validation engine |
+| `css-render` | CSS-in-JS style injection |
+| `date-fns` | Date manipulation for DatePicker/TimePicker |
+| `treemate` | Tree data structure utilities |
+| `vueuc` | Vue utility components (virtual list, positioning) |
+| `vooks` | Vue composition utilities |
+
+---
+
+## DISTRIBUTION FORMATS
+
+| Entry | Format | Use case |
+|-------|--------|----------|
+| `lib/index.js` | CJS | CommonJS / Node.js |
+| `es/index.mjs` | ESM | Vite / modern bundlers (tree-shaking) |
+| `dist/index.js` | UMD (dev) | CDN / browser script tag |
+| `dist/index.prod.js` | UMD (prod) | CDN production |
+| `es/index.d.ts` | TypeScript declarations | IDE support |
+| `volar.d.ts` | Volar declarations | Global component types |
+
+---
+
+## RESOURCES
+
+- GitHub: https://github.com/tusen-ai/naive-ui
+- Documentation: https://www.naiveui.com/en-US/os-theme
+- Changelog: https://github.com/tusen-ai/naive-ui/blob/main/CHANGELOG.en-US.md
+- Discord: https://discord.gg/Pqv7Mev5Dd
+- Icon Library (xicons): https://www.xicons.org
+- Design Resources (Sketch): https://naive-ui.oss-accelerate.aliyuncs.com/NaiveUI-Design-Library-en-US.sketch
+- Awesome Naive UI: https://github.com/naive-ui/awesome-naive
+- License: MIT
+- Maintained by: TuSimple (tusen-ai)
